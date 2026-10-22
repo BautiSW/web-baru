@@ -36,8 +36,13 @@ export function About() {
               file="bauti-estudio.webp"
               alt="Bautista Suárez, foto de estudio"
               fit="contain"
-              width={520}
-              height={760}
+              width={1024}
+              height={1536}
+              // Stacked layout (below md) puts the photo above the text, so swap in
+              // the shot that points down. `(width < 48rem)` is exactly Tailwind's
+              // max-md query — keep the two in sync with the grid's md: switch.
+              sources={[{ file: 'bauti-sobre-mi-abajo.png', media: '(width < 48rem)', width: 682, height: 1024 }]}
+              sourcesClassName="max-md:photo-feather"
               className="h-auto w-[70vw] max-w-sm object-contain sm:w-[65vw] md:h-[75vh] md:max-h-[720px] md:w-auto md:max-w-full"
             />
           </Reveal>
