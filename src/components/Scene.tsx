@@ -141,21 +141,6 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
               <mask id="edgeY" maskContentUnits="userSpaceOnUse">
                 <rect width={SCENE_W} height={SCENE_H} fill="url(#fadeY)" />
               </mask>
-              <filter id="neonGlow" x="-30%" y="-60%" width="160%" height="220%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="b1" />
-                <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b2" />
-                <feGaussianBlur in="SourceGraphic" stdDeviation="22" result="b3" />
-                <feMerge>
-                  <feMergeNode in="b3" />
-                  <feMergeNode in="b2" />
-                  <feMergeNode in="b1" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-              <radialGradient id="neonSpill" cx="0.5" cy="0.5" r="0.5">
-                <stop offset="0%" stopColor="#7fd3ff" stopOpacity="0.22" />
-                <stop offset="100%" stopColor="#7fd3ff" stopOpacity="0" />
-              </radialGradient>
               <mask id="spot">
                 <rect width={SCENE_W} height={SCENE_H} fill="white" />
                 {hovered !== null && (
@@ -176,42 +161,6 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
             </g>
 
             <circle cx={950} cy={180} r={330} fill="url(#lamp)" className="lamp-glow" pointerEvents="none" />
-
-            {/* Cartel de neón en la pared de atrás del auto */}
-            <g pointerEvents="none" aria-hidden="true">
-              <g className="neon">
-                <ellipse cx={455} cy={175} rx={300} ry={140} fill="url(#neonSpill)" style={{ mixBlendMode: 'screen' }} />
-                <text
-                  x={455}
-                  y={180}
-                  textAnchor="middle"
-                  fontFamily="Yellowtail, cursive"
-                  fontSize={76}
-                  fill="#e9f8ff"
-                  stroke="#7fd3ff"
-                  strokeWidth={1.2}
-                  filter="url(#neonGlow)"
-                  transform="rotate(-4 455 180)"
-                >
-                  El taller de Bauti
-                </text>
-              </g>
-              <text
-                x={462}
-                y={234}
-                textAnchor="middle"
-                fontFamily="Inter Tight, sans-serif"
-                fontWeight={700}
-                fontSize={17}
-                letterSpacing={6}
-                fill="#cdeeff"
-                filter="url(#neonGlow)"
-                className="neon-sub"
-                transform="rotate(-4 455 180)"
-              >
-                BUILDING WITH AI.
-              </text>
-            </g>
             <rect width={SCENE_W} height={SCENE_H} fill="url(#vignette)" pointerEvents="none" />
 
             {/* Foco: oscurece todo menos el objeto */}

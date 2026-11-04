@@ -61,36 +61,8 @@ body {
   mix-blend-mode: screen;
 }
 
-/* Cartel de neón: se prende con parpadeos al entrar y titila de vez en cuando */
-@keyframes neon-on {
-  0% { opacity: 0; }
-  8% { opacity: 0.9; }
-  10% { opacity: 0.1; }
-  16% { opacity: 1; }
-  19% { opacity: 0.25; }
-  26% { opacity: 1; }
-  100% { opacity: 1; }
-}
-@keyframes neon-buzz {
-  0%, 100% { opacity: 1; }
-  61% { opacity: 1; }
-  62% { opacity: 0.55; }
-  63% { opacity: 1; }
-  64% { opacity: 0.7; }
-  65% { opacity: 1; }
-}
-.neon {
-  opacity: 0;
-  animation: neon-on 1.6s 1.3s forwards, neon-buzz 9s 3.5s infinite;
-}
-.neon-sub {
-  opacity: 0;
-  animation: neon-on 1.4s 2.1s forwards;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .lamp-glow { animation: none; }
-  .neon, .neon-sub { animation: none; opacity: 1; }
 }
 
 ::-webkit-scrollbar { width: 8px; }
