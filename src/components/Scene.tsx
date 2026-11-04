@@ -101,10 +101,10 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
         transition={{ duration: 1.1, ease: [0.7, 0, 0.84, 0] }}
         onAnimationComplete={() => zoom && go(zoom.route)}
       >
-        <motion.div className="absolute inset-0" style={{ x: sx, y: sy, scale: isTouch ? 1 : 1.02 }}>
+        <motion.div className="absolute inset-0" style={{ x: sx, y: sy, scale: 1 }}>
           <svg
             viewBox={`0 0 ${SCENE_W} ${SCENE_H}`}
-            preserveAspectRatio={isPortrait ? 'xMidYMid meet' : 'xMidYMid slice'}
+            preserveAspectRatio="xMidYMid meet"
             className="h-full w-full"
             role="img"
             aria-label="Taller de Bauti: un Volvo 122S blanco, un banco de trabajo con una notebook, un mate, pelotas de fútbol y rugby y una carpeta con llaves."
@@ -122,6 +122,25 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
                 <stop offset="55%" stopColor="#000" stopOpacity="0" />
                 <stop offset="100%" stopColor="#000" stopOpacity="0.7" />
               </radialGradient>
+              {/* Bordes que se funden a negro: la escena se ve entera, sin recortes */}
+              <linearGradient id="fadeX" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0" stopColor="#fff" stopOpacity="0" />
+                <stop offset="0.06" stopColor="#fff" stopOpacity="1" />
+                <stop offset="0.94" stopColor="#fff" stopOpacity="1" />
+                <stop offset="1" stopColor="#fff" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient id="fadeY" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stopColor="#fff" stopOpacity="0" />
+                <stop offset="0.07" stopColor="#fff" stopOpacity="1" />
+                <stop offset="0.93" stopColor="#fff" stopOpacity="1" />
+                <stop offset="1" stopColor="#fff" stopOpacity="0" />
+              </linearGradient>
+              <mask id="edgeX" maskContentUnits="userSpaceOnUse">
+                <rect width={SCENE_W} height={SCENE_H} fill="url(#fadeX)" />
+              </mask>
+              <mask id="edgeY" maskContentUnits="userSpaceOnUse">
+                <rect width={SCENE_W} height={SCENE_H} fill="url(#fadeY)" />
+              </mask>
               <mask id="spot">
                 <rect width={SCENE_W} height={SCENE_H} fill="white" />
                 {hovered !== null && (
@@ -130,13 +149,16 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
               </mask>
             </defs>
 
-            <image
-              href={imgSrc}
-              width={SCENE_W}
-              height={SCENE_H}
-              preserveAspectRatio="xMidYMid slice"
-              onLoad={() => setLoaded(true)}
-            />
+            <g mask="url(#edgeX)">
+              <image
+                href={imgSrc}
+                width={SCENE_W}
+                height={SCENE_H}
+                preserveAspectRatio="xMidYMid slice"
+                mask="url(#edgeY)"
+                onLoad={() => setLoaded(true)}
+              />
+            </g>
 
             <circle cx={950} cy={180} r={330} fill="url(#lamp)" className="lamp-glow" pointerEvents="none" />
             <rect width={SCENE_W} height={SCENE_H} fill="url(#vignette)" pointerEvents="none" />
