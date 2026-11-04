@@ -21,7 +21,7 @@ export function PageShell({ eyebrow, sceneFocus, children }: Props) {
       {sceneFocus && (
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[75vh] overflow-hidden">
           <motion.img
-            src="/scene/taller.webp"
+            src="/scene/taller-v4.webp"
             alt=""
             initial={{ scale: 1.35, opacity: 0 }}
             animate={{ scale: 1.2, opacity: 0.32 }}
