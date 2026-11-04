@@ -85,8 +85,8 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
 
   const onMove = (e: React.MouseEvent) => {
     if (isTouch || zoom || reduceMotion) return
-    mx.set((e.clientX / window.innerWidth - 0.5) * -18)
-    my.set((e.clientY / window.innerHeight - 0.5) * -12)
+    mx.set((e.clientX / window.innerWidth - 0.5) * -10)
+    my.set((e.clientY / window.innerHeight - 0.5) * -7)
   }
 
   const hoveredRect = hovered !== null ? rects[hovered] : null
@@ -101,7 +101,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
         transition={{ duration: 1.1, ease: [0.7, 0, 0.84, 0] }}
         onAnimationComplete={() => zoom && go(zoom.route)}
       >
-        <motion.div className="absolute inset-0" style={{ x: sx, y: sy, scale: isTouch ? 1 : 1.04 }}>
+        <motion.div className="absolute inset-0" style={{ x: sx, y: sy, scale: isTouch ? 1 : 1.02 }}>
           <svg
             viewBox={`0 0 ${SCENE_W} ${SCENE_H}`}
             preserveAspectRatio={isPortrait ? 'xMidYMid meet' : 'xMidYMid slice'}
