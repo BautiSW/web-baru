@@ -39,8 +39,14 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   // Parallax suave siguiendo el mouse
   const mx = useMotionValue(0)
   const my = useMotionValue(0)
-  const sx = useSpring(mx, { stiffness: 60, damping: 20, mass: 0.6 })
-  const sy = useSpring(my, { stiffness: 60, damping: 20, mass: 0.6 })
+  const sx = useSpring(mx, { stiffness: 50, damping: 18, mass: 0.7 })
+  const sy = useSpring(my, { stiffness: 50, damping: 18, mass: 0.7 })
+  // Leve giro de "cámara" hacia donde apunta el mouse
+  const tx = useMotionValue(0)
+  const ty = useMotionValue(0)
+  const rotY = useSpring(tx, { stiffness: 50, damping: 18, mass: 0.7 })
+  const rotX = useSpring(ty, { stiffness: 50, damping: 18, mass: 0.7 })
+  const [liveRect, setLiveRect] = useState<Rect | null>(null)
 
   const measure = useCallback(() => {
     setRects(
@@ -85,23 +91,36 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
 
   const onMove = (e: React.MouseEvent) => {
     if (isTouch || zoom || reduceMotion) return
-    mx.set((e.clientX / window.innerWidth - 0.5) * -10)
-    my.set((e.clientY / window.innerHeight - 0.5) * -7)
+    const nx = e.clientX / window.innerWidth - 0.5
+    const ny = e.clientY / window.innerHeight - 0.5
+    mx.set(nx * -40)
+    my.set(ny * -24)
+    tx.set(nx * 4)
+    ty.set(ny * -3)
+    if (hovered !== null) {
+      const r = polyRefs.current[hovered]?.getBoundingClientRect()
+      if (r) setLiveRect({ left: r.left, top: r.top, width: r.width, height: r.height })
+    }
   }
 
-  const hoveredRect = hovered !== null ? rects[hovered] : null
-  const imgSrc = isSmall ? '/scene/taller-v5-1280.webp' : '/scene/taller-v5.webp'
+  const hoveredRect = hovered !== null ? (liveRect ?? rects[hovered]) : null
+  const bigScreen = window.innerWidth * (window.devicePixelRatio || 1) > 2600
+  const imgSrc = isSmall
+    ? '/scene/taller-v5-1280.webp'
+    : bigScreen
+      ? '/scene/taller-v5-4k.webp'
+      : '/scene/taller-v5.webp'
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-black" onMouseMove={onMove}>
       <motion.div
         className="absolute inset-0"
-        style={{ transformOrigin: zoom ? `${zoom.x}px ${zoom.y}px` : '50% 50%' }}
+        style={{ transformOrigin: zoom ? `${zoom.x}px ${zoom.y}px` : '50% 50%', perspective: 1400 }}
         animate={zoom ? { scale: 2.8 } : { scale: 1 }}
         transition={{ duration: 1.1, ease: [0.7, 0, 0.84, 0] }}
         onAnimationComplete={() => zoom && go(zoom.route)}
       >
-        <motion.div className="absolute inset-0" style={{ x: sx, y: sy, scale: isPortrait ? 1 : 0.9 }}>
+        <motion.div className="absolute inset-0" style={{ x: sx, y: sy, rotateX: rotX, rotateY: rotY, scale: isPortrait ? 1 : 0.9 }}>
           <svg
             viewBox={`0 0 ${SCENE_W} ${SCENE_H}`}
             preserveAspectRatio="xMidYMid meet"
@@ -141,6 +160,9 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
               <mask id="edgeY" maskContentUnits="userSpaceOnUse">
                 <rect width={SCENE_W} height={SCENE_H} fill="url(#fadeY)" />
               </mask>
+              <filter id="softSm" x="-20%" y="-30%" width="140%" height="160%">
+                <feGaussianBlur stdDeviation="7" />
+              </filter>
               <mask id="spot">
                 <rect width={SCENE_W} height={SCENE_H} fill="white" />
                 {hovered !== null && (
@@ -158,6 +180,14 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
                 mask="url(#edgeY)"
                 onLoad={() => setLoaded(true)}
               />
+            </g>
+
+            {/* Neón: una capa oscura que se apaga y prende sobre el cartel y su reflejo en el capó */}
+            <g pointerEvents="none" aria-hidden="true">
+              <polygon points="484,158 784,132 792,324 488,304" fill="#000" filter="url(#softSm)" className="neon-off" />
+              <g opacity={0.65}>
+                <polygon points="430,412 660,418 668,498 436,486" fill="#000" filter="url(#soft)" className="neon-off" />
+              </g>
             </g>
 
             <circle cx={950} cy={180} r={330} fill="url(#lamp)" className="lamp-glow" pointerEvents="none" />
@@ -187,8 +217,10 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
                 role="link"
                 aria-label={`${h.label}: ${h.hint}`}
                 className="cursor-pointer outline-none"
-                onMouseEnter={() => {
+                onMouseEnter={(e) => {
                   if (zoom) return
+                  const r = e.currentTarget.getBoundingClientRect()
+                  setLiveRect({ left: r.left, top: r.top, width: r.width, height: r.height })
                   setHovered(i)
                   setExplored(true)
                 }}
