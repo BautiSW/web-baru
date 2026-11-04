@@ -1,99 +1,70 @@
 @import "tailwindcss";
 
 @theme {
-  --color-black: #0a0a0b;
-  --color-cream: #f4efe6;
-  --color-navy: #0b2545;
-  --color-blue: #1f5fa8;
-  --color-blue-light: #64a6e4;
-  --font-heading: "Poppins", "Inter Tight", sans-serif;
+  --color-ink: #0a0a0a;
+  --color-cream: #f2ede4;
+  --color-warm: #e8b072;
+  --color-racing: #6cc4e8;
+  --font-display: "Inter Tight", "Inter", sans-serif;
   --font-body: "Inter", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
-html {
-  scroll-behavior: smooth;
+html,
+body,
+#root {
+  height: 100%;
 }
 
 body {
+  margin: 0;
   font-family: var(--font-body);
-  background-color: var(--color-black);
+  background-color: var(--color-ink);
   color: var(--color-cream);
-}
-
-h1, h2, h3, h4 {
-  font-family: var(--font-heading);
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background-color: var(--color-blue);
-  color: var(--color-cream);
+  background-color: var(--color-warm);
+  color: var(--color-ink);
 }
 
-::-webkit-scrollbar {
-  width: 10px;
-}
-::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
-::-webkit-scrollbar-thumb {
-  @apply bg-blue/50 rounded-full;
+.display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 0.88;
+  text-transform: uppercase;
 }
 
-@keyframes marquee-left {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-@keyframes marquee-right {
-  from { transform: translateX(-50%); }
-  to { transform: translateX(0); }
-}
-.animate-marquee-left {
-  animation: marquee-left 32s linear infinite;
-}
-.animate-marquee-right {
-  animation: marquee-right 36s linear infinite;
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-cream) 55%, transparent);
 }
 
-@keyframes chip-in {
-  from { opacity: 0; transform: translateY(10px) scale(0.92); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+/* Parpadeo sutil de la lámpara del taller */
+@keyframes lamp-flicker {
+  0%, 100% { opacity: 0.55; }
+  42% { opacity: 0.55; }
+  43% { opacity: 0.38; }
+  44% { opacity: 0.6; }
+  46% { opacity: 0.45; }
+  47% { opacity: 0.58; }
+  78% { opacity: 0.52; }
+  80% { opacity: 0.6; }
 }
-.animate-chip-in {
-  animation: chip-in 0.5s ease-out both;
-}
-
-@keyframes shimmer-sweep {
-  from { transform: translateX(-120%); }
-  to { transform: translateX(120%); }
-}
-.animate-shimmer-sweep {
-  animation: shimmer-sweep 2.6s ease-in-out infinite;
-}
-@keyframes dash-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.9; }
-}
-.animate-dash-pulse {
-  animation: dash-pulse 2.4s ease-in-out infinite;
+.lamp-glow {
+  animation: lamp-flicker 7s infinite;
+  mix-blend-mode: screen;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+  .lamp-glow { animation: none; }
 }
 
-/* Fades an opaque photo's edges into the section background, matching the
-   alpha-feathered cutouts (used for the mobile "Sobre mí" shot). */
-@utility photo-feather {
-  mask-image:
-    linear-gradient(to right, transparent, #000 8%, #000 92%, transparent),
-    linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
-  mask-composite: intersect;
-}
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgb(242 237 228 / 0.15); border-radius: 999px; }

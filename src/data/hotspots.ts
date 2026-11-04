@@ -1,0 +1,43 @@
+import type { Route } from '@/lib/router'
+
+/**
+ * Zonas cliqueables de la escena del taller.
+ * Coordenadas en el sistema de la imagen original (1677 x 938):
+ * si se cambia la imagen, hay que reajustar estos polígonos.
+ */
+export const SCENE_W = 1677
+export const SCENE_H = 938
+
+export interface Hotspot {
+  route: Exclude<Route, 'home'>
+  label: string
+  hint: string
+  points: string
+}
+
+export const hotspots: Hotspot[] = [
+  {
+    route: 'garage',
+    label: 'Under the hood',
+    hint: 'Cómo trabajo y uso la IA',
+    points: '0,295 120,300 300,412 600,420 715,470 722,640 665,700 625,800 360,805 0,895',
+  },
+  {
+    route: 'work',
+    label: 'Work',
+    hint: 'Proyectos',
+    points: '815,395 1050,395 1150,398 1226,396 1230,632 1150,632 1062,598 1035,582 818,578',
+  },
+  {
+    route: 'about',
+    label: 'Mi historia',
+    hint: 'Quién soy',
+    points: '1285,462 1395,468 1500,505 1628,505 1632,652 1600,702 1472,702 1380,612 1286,578',
+  },
+  {
+    route: 'contact',
+    label: 'Contacto',
+    hint: 'Escribime',
+    points: '998,758 1150,696 1298,732 1312,842 1198,848 1088,804',
+  },
+]
