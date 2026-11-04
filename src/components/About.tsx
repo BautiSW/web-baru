@@ -51,7 +51,7 @@ export function About() {
             <SectionHeading eyebrow="Quién soy" title="Sobre mí" tone="onCream" align="left" />
 
             <p className="text-lg leading-relaxed text-black/80">
-              Tengo 19 años, vivo en Buenos Aires y estudio Administración de
+              Tengo 20 años, vivo en Buenos Aires y estudio Administración de
               Empresas en la Universidad Torcuato Di Tella. Emprendo desde muy
               chico: Hoy estoy construyendo proyectos propios usando IA como
               herramienta central de trabajo, desde la idea hasta el primer
