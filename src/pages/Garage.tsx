@@ -68,6 +68,7 @@ function ChatViewer() {
 export function Garage() {
   const ia = tools.filter((t) => t.category === 'ia')
   const software = tools.filter((t) => t.category === 'software')
+  const learning = tools.filter((t) => t.category === 'aprendiendo')
 
   return (
     <PageShell eyebrow="Under the hood · Cómo funciona por dentro" sceneFocus="12% 55%">
@@ -120,9 +121,17 @@ export function Garage() {
           ))}
         </div>
         <p className="eyebrow mb-4">Software</p>
-        <div className="flex flex-wrap gap-2.5">
+        <div className="mb-10 flex flex-wrap gap-2.5">
           {software.map((t) => (
             <span key={t.name} className="rounded-full border border-white/15 px-4 py-2 text-sm text-cream/75">
+              {t.name}
+            </span>
+          ))}
+        </div>
+        <p className="eyebrow mb-4">Aprendiendo ahora</p>
+        <div className="flex flex-wrap gap-2.5">
+          {learning.map((t) => (
+            <span key={t.name} className="rounded-full border border-dashed border-white/25 px-4 py-2 text-sm text-cream/60">
               {t.name}
             </span>
           ))}
