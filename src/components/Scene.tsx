@@ -90,7 +90,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   }
 
   const hoveredRect = hovered !== null ? rects[hovered] : null
-  const imgSrc = isSmall ? '/scene/taller-v4-1280.webp' : '/scene/taller-v4.webp'
+  const imgSrc = isSmall ? '/scene/taller-v5-1280.webp' : '/scene/taller-v5.webp'
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-black" onMouseMove={onMove}>
