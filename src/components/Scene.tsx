@@ -101,7 +101,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
         transition={{ duration: 1.1, ease: [0.7, 0, 0.84, 0] }}
         onAnimationComplete={() => zoom && go(zoom.route)}
       >
-        <motion.div className="absolute inset-0" style={{ x: sx, y: sy, scale: 1 }}>
+        <motion.div className="absolute inset-0" style={{ x: sx, y: sy, scale: isPortrait ? 1 : 0.9 }}>
           <svg
             viewBox={`0 0 ${SCENE_W} ${SCENE_H}`}
             preserveAspectRatio="xMidYMid meet"
@@ -125,14 +125,14 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
               {/* Bordes que se funden a negro: la escena se ve entera, sin recortes */}
               <linearGradient id="fadeX" x1="0" x2="1" y1="0" y2="0">
                 <stop offset="0" stopColor="#fff" stopOpacity="0" />
-                <stop offset="0.06" stopColor="#fff" stopOpacity="1" />
-                <stop offset="0.94" stopColor="#fff" stopOpacity="1" />
+                <stop offset="0.035" stopColor="#fff" stopOpacity="1" />
+                <stop offset="0.965" stopColor="#fff" stopOpacity="1" />
                 <stop offset="1" stopColor="#fff" stopOpacity="0" />
               </linearGradient>
               <linearGradient id="fadeY" x1="0" x2="0" y1="0" y2="1">
                 <stop offset="0" stopColor="#fff" stopOpacity="0" />
-                <stop offset="0.07" stopColor="#fff" stopOpacity="1" />
-                <stop offset="0.93" stopColor="#fff" stopOpacity="1" />
+                <stop offset="0.04" stopColor="#fff" stopOpacity="1" />
+                <stop offset="0.96" stopColor="#fff" stopOpacity="1" />
                 <stop offset="1" stopColor="#fff" stopOpacity="0" />
               </linearGradient>
               <mask id="edgeX" maskContentUnits="userSpaceOnUse">
