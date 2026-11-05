@@ -7,15 +7,15 @@ import { animate, useMotionValue } from 'motion/react'
  * Posición y tamaño en coordenadas de la escena (1677 x 938).
  */
 const SHEET = {
-  src: '/scene/capo-anim-v1.webp',
+  src: '/scene/capo-anim-v2.webp',
   frames: 29,
   cols: 7,
-  cw: 918,
-  ch: 676,
-  x: 67.15,
-  y: 70.51,
-  w: 751.7,
-  h: 554.27,
+  cw: 812,
+  ch: 592,
+  x: 116.28,
+  y: 90.19,
+  w: 664.9,
+  h: 485.4,
 }
 
 export function HoodAnimation({ open }: { open: boolean }) {
