@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, useMotionValue, useSpring } from 'motion/react'
 import { hotspots, SCENE_H, SCENE_W, type Hotspot } from '@/data/hotspots'
-import { HoodAnimation } from './HoodAnimation'
+import { SpriteAnimation } from './SpriteAnimation'
+import { capoSheet, mateSheet } from '@/data/sprites'
 import type { Route } from '@/lib/router'
 
 interface Rect {
@@ -158,6 +159,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   const hoveredRect = hovered !== null ? (liveRect ?? rects[hovered]) : null
   const imgSrc = SCENE_SRC
   const garageIndex = hotspots.findIndex((h) => h.route === 'garage')
+  const workIndex = hotspots.findIndex((h) => h.route === 'work')
   const hoodOpen = hovered === garageIndex || zoom?.route === 'garage'
 
   return (
@@ -219,7 +221,9 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
           </svg>
 
           {/* 2. Capó que se abre de verdad (cuadros de video), en su propia capa */}
-          <HoodAnimation open={hoodOpen} />
+          <SpriteAnimation sheet={capoSheet} active={hoodOpen} mode="reversible" duration={1.1} />
+          {/* Mate: el termo ceba y sale vapor (zona Work) */}
+          <SpriteAnimation sheet={mateSheet} active={hovered === workIndex} mode="oneshot" duration={3.6} />
 
           {/* 3. Efectos de luz: cada uno en su capa, así sus animaciones no redibujan la escena */}
           <Layer className="lamp-glow">
