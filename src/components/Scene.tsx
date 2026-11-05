@@ -1,16 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { motion, useMotionValue, useSpring } from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
+import { animate, motion, useMotionValue, useSpring } from 'motion/react'
 import { hotspots, SCENE_H, SCENE_W, type Hotspot } from '@/data/hotspots'
 import { SpriteAnimation } from './SpriteAnimation'
 import { capoSheet, hojaSheet, mateSheet } from '@/data/sprites'
 import type { Route } from '@/lib/router'
-
-interface Rect {
-  left: number
-  top: number
-  width: number
-  height: number
-}
 
 function useMedia(query: string) {
   const [match, setMatch] = useState(() => window.matchMedia(query).matches)
@@ -55,10 +48,45 @@ function Layer({ className = '', style, children }: { className?: string; style?
   )
 }
 
+function useViewport() {
+  const [size, setSize] = useState(() => ({ w: window.innerWidth, h: window.innerHeight }))
+  useEffect(() => {
+    const on = () => setSize({ w: window.innerWidth, h: window.innerHeight })
+    window.addEventListener('resize', on)
+    return () => window.removeEventListener('resize', on)
+  }, [])
+  return size
+}
+
+/** Punto donde va la etiqueta de cada objeto en el celular (arriba-centro de su zona). */
+const ANCHORS = hotspots.map((h) => {
+  const pts = h.points.split(' ').map((p) => p.split(',').map(Number))
+  const xs = pts.map((p) => p[0])
+  const ys = pts.map((p) => p[1])
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2
+  const cy = Math.min(...ys) + (Math.max(...ys) - Math.min(...ys)) * 0.35
+  return { x: cx, y: cy }
+})
+/** En el celular la cámara arranca centrada en el banco de trabajo. */
+const MOBILE_START_X = 1040
+
 export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   const isTouch = useMedia('(hover: none)')
   const isPortrait = useMedia('(max-aspect-ratio: 11/10)')
   const reduceMotion = useMedia('(prefers-reduced-motion: reduce)')
+  // Celular / pantalla vertical: la escena ocupa todo el alto y se recorre deslizando de costado
+  const mobile = isPortrait
+  const { w: vw, h: vh } = useViewport()
+  const sceneScale = vh / SCENE_H
+  const contentW = SCENE_W * sceneScale
+  const minPan = Math.min(0, vw - contentW)
+  const clampPan = (x: number) => Math.max(minPan, Math.min(0, x))
+  const panX = useMotionValue(clampPan(vw / 2 - MOBILE_START_X * sceneScale))
+  const dragged = useRef(false)
+  useEffect(() => {
+    if (mobile) panX.set(clampPan(vw / 2 - MOBILE_START_X * sceneScale))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mobile, vw, vh])
 
   const [loaded, setLoaded] = useState(sceneReady)
   const [firstVisit] = useState(() => !seenOnce)
@@ -66,7 +94,6 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   const [spotIndex, setSpotIndex] = useState<number | null>(null)
   const [touched, setTouched] = useState(false)
   const [explored, setExplored] = useState(false)
-  const [rects, setRects] = useState<Rect[]>([])
   const [zoom, setZoom] = useState<{ x: number; y: number; route: Route } | null>(null)
   const polyRefs = useRef<(SVGPolygonElement | null)[]>([])
   const navigated = useRef(false)
@@ -83,21 +110,6 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   const rotX = useSpring(ty, { stiffness: 50, damping: 18, mass: 0.7 })
   const labelRef = useRef<HTMLDivElement>(null)
 
-  const measure = useCallback(() => {
-    setRects(
-      polyRefs.current.map((p) => {
-        if (!p) return { left: 0, top: 0, width: 0, height: 0 }
-        const r = p.getBoundingClientRect()
-        return { left: r.left, top: r.top, width: r.width, height: r.height }
-      }),
-    )
-  }, [])
-
-  useEffect(() => {
-    measure()
-    window.addEventListener('resize', measure)
-    return () => window.removeEventListener('resize', measure)
-  }, [measure, loaded, isPortrait])
 
   // Mostrar la escena apenas la imagen esté decodificada (con red de seguridad)
   useEffect(() => {
@@ -140,6 +152,22 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
     setZoom({ x, y, route: spot.route })
     // red de seguridad por si la animación no dispara el callback
     setTimeout(() => go(spot.route), 1400)
+  }
+
+  const select = (i: number | null) => {
+    setHovered(i)
+    if (i !== null) setSpotIndex(i)
+    setExplored(true)
+    // En el celular, la cámara se centra en el objeto elegido
+    if (mobile && i !== null) {
+      animate(panX, clampPan(vw / 2 - ANCHORS[i].x * sceneScale), { type: 'spring', stiffness: 120, damping: 22 })
+    }
+  }
+  const tap = (i: number) => {
+    if (dragged.current || zoom) return
+    setTouched(true)
+    if (hovered === i) enter(i)
+    else select(i)
   }
 
   const onMove = (e: React.MouseEvent) => {
@@ -185,8 +213,23 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
         onAnimationComplete={() => zoom && go(zoom.route)}
       >
         <motion.div
+          className="absolute left-0 top-0 h-full"
+          style={{ width: mobile ? contentW : '100%', x: mobile ? panX : 0, touchAction: mobile ? 'pan-y' : 'auto' }}
+          drag={mobile && !zoom ? 'x' : false}
+          dragConstraints={{ left: minPan, right: 0 }}
+          dragElastic={0.06}
+          dragTransition={{ power: 0.25, timeConstant: 260 }}
+          onDragStart={() => {
+            dragged.current = true
+            setExplored(true)
+          }}
+          onDragEnd={() => {
+            setTimeout(() => (dragged.current = false), 60)
+          }}
+        >
+        <motion.div
           className="absolute inset-0"
-          style={{ x: sx, y: sy, rotateX: rotX, rotateY: rotY, scale: isPortrait ? 1 : 0.9, willChange: 'transform' }}
+          style={{ x: sx, y: sy, rotateX: rotX, rotateY: rotY, scale: mobile ? 1 : 0.9, willChange: 'transform' }}
         >
           {/* 1. Escena base (estática: se dibuja una vez) */}
           <svg
@@ -301,6 +344,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
             viewBox={`0 0 ${SCENE_W} ${SCENE_H}`}
             preserveAspectRatio="xMidYMid meet"
             className="absolute inset-0 h-full w-full"
+            onClick={() => isTouch && !dragged.current && !zoom && setHovered(null)}
           >
             {hotspots.map((h: Hotspot, i) => (
               <polygon
@@ -316,18 +360,18 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
                 aria-label={`${h.label}: ${h.hint}`}
                 className="cursor-pointer outline-none"
                 onMouseEnter={() => {
-                  if (zoom) return
-                  setHovered(i)
-                  setSpotIndex(i)
-                  setExplored(true)
+                  if (zoom || isTouch) return
+                  select(i)
                 }}
-                onMouseLeave={() => !zoom && setHovered(null)}
+                onMouseLeave={() => !zoom && !isTouch && setHovered(null)}
                 onFocus={() => {
                   setHovered(i)
                   setSpotIndex(i)
                 }}
                 onBlur={() => setHovered(null)}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (isTouch) return tap(i)
                   setTouched(true)
                   enter(i)
                 }}
@@ -340,6 +384,36 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
               />
             ))}
           </svg>
+
+          {/* Etiquetas en el celular: se mueven con la escena; la del objeto elegido invita a entrar */}
+          {isTouch && !zoom && (
+            <div className="pointer-events-none absolute inset-0">
+              {hotspots.map((h, i) => {
+                const sel = hovered === i
+                return (
+                  <button
+                    key={h.route}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (dragged.current) return
+                      setTouched(true)
+                      if (sel) enter(i)
+                      else select(i)
+                    }}
+                    className={`pointer-events-auto absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border font-mono uppercase tracking-[0.14em] transition-all duration-300 ${
+                      sel
+                        ? 'border-white/40 bg-cream px-3.5 py-1.5 text-[11px] text-ink'
+                        : 'border-white/20 bg-black/70 px-3 py-1 text-[10px] text-cream'
+                    }`}
+                    style={{ left: `${(ANCHORS[i].x / SCENE_W) * 100}%`, top: `${(ANCHORS[i].y / SCENE_H) * 100}%` }}
+                  >
+                    {sel ? `${h.label} · Entrar →` : h.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </motion.div>
         </motion.div>
       </motion.div>
 
@@ -358,22 +432,6 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
         </div>
       )}
 
-      {/* Etiquetas fijas (celular) */}
-      {isTouch &&
-        !zoom &&
-        rects.map((r, i) =>
-          r.width ? (
-            <button
-              key={hotspots[i].route}
-              onClick={() => enter(i)}
-              className="fixed z-20 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/20 bg-black/60 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-cream backdrop-blur-md"
-              style={{ left: r.left + r.width / 2, top: r.top + r.height / 2 }}
-            >
-              {hotspots[i].label}
-            </button>
-          ) : null,
-        )}
-
       {/* Pista inicial */}
       <motion.p
         initial={{ opacity: 0 }}
@@ -381,7 +439,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
         transition={{ delay: loaded && !explored ? 1.2 : 0, duration: explored ? 0.3 : 0.8 }}
         className="pointer-events-none fixed inset-x-0 bottom-24 z-10 text-center font-mono text-[11px] uppercase tracking-[0.2em] text-cream"
       >
-        {isTouch ? 'Tocá un objeto del taller' : 'Pasá el mouse por los objetos del taller'}
+        {isTouch ? 'Deslizá y tocá un objeto' : 'Pasá el mouse por los objetos del taller'}
       </motion.p>
 
       {/* Al meterse en el motor: un resplandor cálido antes del corte a la sección */}
