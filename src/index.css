@@ -74,12 +74,18 @@ body {
 }
 @keyframes neon-flicker {
   0%, 22% { opacity: 0; }
-  23% { opacity: 0.88; }
-  24.2% { opacity: 0; }
-  25.5% { opacity: 0.92; }
-  27% { opacity: 0.08; }
-  28.5% { opacity: 0.8; }
-  30.5%, 100% { opacity: 0; }
+  22.6% { opacity: 0.45; }
+  23.2% { opacity: 0.05; }
+  24% { opacity: 0.35; }
+  24.8%, 100% { opacity: 0; }
+}
+/* La lámpara apenas falla: un parpadeo corto y suave, como un foco flojo */
+@keyframes lamp-stutter {
+  0%, 22.2% { opacity: 0; }
+  22.6% { opacity: 1; }
+  23% { opacity: 0.2; }
+  23.4% { opacity: 0.8; }
+  24%, 100% { opacity: 0; }
 }
 .neon-off {
   opacity: 0;
@@ -87,7 +93,7 @@ body {
 }
 .lamp-off {
   opacity: 0;
-  animation: neon-flicker 12s 3.25s infinite;
+  animation: lamp-stutter 12s 3s infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
