@@ -22,6 +22,28 @@ function useMedia(query: string) {
   return match
 }
 
+/** Imagen de la escena según la pantalla (se decide una sola vez). */
+function pickSceneSrc() {
+  const small = window.matchMedia('(max-width: 900px)').matches
+  const big = window.innerWidth * (window.devicePixelRatio || 1) > 2600
+  return small ? '/scene/taller-v7-1280.webp' : big ? '/scene/taller-v7-4k.webp' : '/scene/taller-v7.webp'
+}
+const SCENE_SRC = pickSceneSrc()
+/** Precarga y decodifica la imagen apenas carga la web; queda lista para volver al taller al instante. */
+let sceneReady = false
+const sceneLoading: Promise<void> = (() => {
+  const img = new Image()
+  img.src = SCENE_SRC
+  return img
+    .decode()
+    .catch(() => undefined)
+    .then(() => {
+      sceneReady = true
+    })
+})()
+/** Si ya se vio el taller en esta visita, al volver no se repite el fundido largo. */
+let seenOnce = false
+
 function Layer({ className = '', style, children }: { className?: string; style?: React.CSSProperties; children: React.ReactNode }) {
   return (
     <div className={`pointer-events-none absolute inset-0 ${className}`} style={{ willChange: 'opacity', ...style }} aria-hidden="true">
@@ -36,9 +58,9 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   const isTouch = useMedia('(hover: none)')
   const isPortrait = useMedia('(max-aspect-ratio: 11/10)')
   const reduceMotion = useMedia('(prefers-reduced-motion: reduce)')
-  const isSmall = useMedia('(max-width: 900px)')
 
-  const [loaded, setLoaded] = useState(false)
+  const [loaded, setLoaded] = useState(sceneReady)
+  const [firstVisit] = useState(() => !seenOnce)
   const [hovered, setHovered] = useState<number | null>(null)
   const [spotIndex, setSpotIndex] = useState<number | null>(null)
   const [touched, setTouched] = useState(false)
@@ -76,10 +98,16 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
     return () => window.removeEventListener('resize', measure)
   }, [measure, loaded, isPortrait])
 
-  // Si la imagen tarda, igual mostramos la escena
+  // Mostrar la escena apenas la imagen esté decodificada (con red de seguridad)
   useEffect(() => {
-    const t = setTimeout(() => setLoaded(true), 2500)
-    return () => clearTimeout(t)
+    let alive = true
+    sceneLoading.then(() => alive && setLoaded(true))
+    const t = setTimeout(() => alive && setLoaded(true), 1500)
+    seenOnce = true
+    return () => {
+      alive = false
+      clearTimeout(t)
+    }
   }, [])
 
   const go = (route: Route) => {
@@ -128,12 +156,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   }
 
   const hoveredRect = hovered !== null ? (liveRect ?? rects[hovered]) : null
-  const bigScreen = window.innerWidth * (window.devicePixelRatio || 1) > 2600
-  const imgSrc = isSmall
-    ? '/scene/taller-v7-1280.webp'
-    : bigScreen
-      ? '/scene/taller-v7-4k.webp'
-      : '/scene/taller-v7.webp'
+  const imgSrc = SCENE_SRC
   const garageIndex = hotspots.findIndex((h) => h.route === 'garage')
   const hoodOpen = hovered === garageIndex || zoom?.route === 'garage'
 
@@ -190,7 +213,6 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
                 height={SCENE_H}
                 preserveAspectRatio="xMidYMid slice"
                 mask="url(#edgeY)"
-                onLoad={() => setLoaded(true)}
               />
             </g>
             <rect width={SCENE_W} height={SCENE_H} fill="url(#vignette)" />
@@ -343,7 +365,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: loaded && !explored && !touched && !zoom ? 0.7 : 0 }}
-        transition={{ delay: loaded && !explored ? 1.6 : 0, duration: explored ? 0.3 : 0.8 }}
+        transition={{ delay: loaded && !explored ? 1.2 : 0, duration: explored ? 0.3 : 0.8 }}
         className="pointer-events-none fixed inset-x-0 bottom-24 z-10 text-center font-mono text-[11px] uppercase tracking-[0.2em] text-cream"
       >
         {isTouch ? 'Tocá un objeto del taller' : 'Pasá el mouse por los objetos del taller'}
@@ -364,9 +386,9 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
       {/* Fundido: la lámpara se prende al entrar, todo se apaga al salir */}
       <motion.div
         className="pointer-events-none fixed inset-0 z-30 bg-black"
-        initial={{ opacity: 1 }}
+        initial={{ opacity: firstVisit ? 1 : 0.6 }}
         animate={{ opacity: zoom ? 1 : loaded ? 0 : 1 }}
-        transition={zoom ? (zoom.route === 'garage' ? { delay: 0.8, duration: 0.45 } : { delay: 0.55, duration: 0.55 }) : { duration: 1.4, ease: 'easeOut' }}
+        transition={zoom ? (zoom.route === 'garage' ? { delay: 0.8, duration: 0.45 } : { delay: 0.55, duration: 0.55 }) : { duration: firstVisit ? 0.8 : 0.35, ease: 'easeOut' }}
       />
     </div>
   )

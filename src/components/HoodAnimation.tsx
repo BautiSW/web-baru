@@ -31,35 +31,24 @@ const FADE_IN = 0.14
 export function HoodAnimation({ open }: { open: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
-  const frames = useRef<ImageBitmap[] | HTMLCanvasElement[]>([])
+  const sheet = useRef<HTMLImageElement | null>(null)
   const progress = useMotionValue(0)
 
-  // Cargar la imagen y cortarla en cuadros una sola vez
+  // Cargar la imagen una sola vez. decode() la prepara fuera del hilo principal,
+  // así no traba la página; después cada cuadro se dibuja directo desde la hoja.
   useEffect(() => {
     let cancelled = false
     const img = new Image()
     img.decoding = 'async'
     img.src = SHEET.src
-    img.onload = async () => {
-      const list: (ImageBitmap | HTMLCanvasElement)[] = []
-      for (let i = 0; i < SHEET.frames; i++) {
-        const sx = (i % SHEET.cols) * SHEET.cw
-        const sy = Math.floor(i / SHEET.cols) * SHEET.ch
-        if ('createImageBitmap' in window) {
-          list.push(await createImageBitmap(img, sx, sy, SHEET.cw, SHEET.ch))
-        } else {
-          const c = document.createElement('canvas')
-          c.width = SHEET.cw
-          c.height = SHEET.ch
-          c.getContext('2d')!.drawImage(img, sx, sy, SHEET.cw, SHEET.ch, 0, 0, SHEET.cw, SHEET.ch)
-          list.push(c)
-        }
-      }
-      if (!cancelled) {
-        frames.current = list as ImageBitmap[]
+    img
+      .decode()
+      .catch(() => undefined)
+      .then(() => {
+        if (cancelled) return
+        sheet.current = img
         draw(progress.get())
-      }
-    }
+      })
     return () => {
       cancelled = true
     }
@@ -97,23 +86,35 @@ export function HoodAnimation({ open }: { open: boolean }) {
 
   function draw(p: number) {
     const canvas = canvasRef.current
-    const list = frames.current
+    const img = sheet.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    if (!list.length || p <= 0.001) return
+    if (!img || p <= 0.001) return
     const f = p * (SHEET.frames - 1)
     const a = Math.floor(f)
     const b = Math.min(a + 1, SHEET.frames - 1)
     const t = f - a
     const fade = Math.min(1, p / FADE_IN)
     ctx.imageSmoothingQuality = 'high'
+    const blit = (i: number) =>
+      ctx.drawImage(
+        img,
+        (i % SHEET.cols) * SHEET.cw,
+        Math.floor(i / SHEET.cols) * SHEET.ch,
+        SHEET.cw,
+        SHEET.ch,
+        0,
+        0,
+        canvas.width,
+        canvas.height,
+      )
     ctx.globalAlpha = fade
-    ctx.drawImage(list[a], 0, 0, canvas.width, canvas.height)
+    blit(a)
     if (t > 0.01 && b !== a) {
       ctx.globalAlpha = fade * t
-      ctx.drawImage(list[b], 0, 0, canvas.width, canvas.height)
+      blit(b)
     }
     ctx.globalAlpha = 1
   }
