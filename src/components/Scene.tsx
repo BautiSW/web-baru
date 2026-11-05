@@ -106,10 +106,10 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   const hoveredRect = hovered !== null ? (liveRect ?? rects[hovered]) : null
   const bigScreen = window.innerWidth * (window.devicePixelRatio || 1) > 2600
   const imgSrc = isSmall
-    ? '/scene/taller-v5-1280.webp'
+    ? '/scene/taller-v6-1280.webp'
     : bigScreen
-      ? '/scene/taller-v5-4k.webp'
-      : '/scene/taller-v5.webp'
+      ? '/scene/taller-v6-4k.webp'
+      : '/scene/taller-v6.webp'
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-black" onMouseMove={onMove}>
@@ -190,7 +190,14 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
               </g>
             </g>
 
-            <circle cx={950} cy={180} r={330} fill="url(#lamp)" className="lamp-glow" pointerEvents="none" />
+            <g className="lamp-glow-wrap">
+              <circle cx={950} cy={180} r={330} fill="url(#lamp)" className="lamp-glow" pointerEvents="none" />
+            </g>
+            {/* La lámpara titila junto con el neón */}
+            <g pointerEvents="none" aria-hidden="true" opacity={0.8}>
+              <ellipse cx={952} cy={170} rx={78} ry={30} fill="#000" filter="url(#softSm)" className="lamp-off" />
+              <ellipse cx={1000} cy={360} rx={300} ry={190} fill="#000" filter="url(#soft)" className="lamp-off" opacity={0.45} />
+            </g>
             <rect width={SCENE_W} height={SCENE_H} fill="url(#vignette)" pointerEvents="none" />
 
             {/* Foco: oscurece todo menos el objeto */}
