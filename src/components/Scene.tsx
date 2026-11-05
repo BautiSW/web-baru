@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, useMotionValue, useSpring } from 'motion/react'
 import { hotspots, SCENE_H, SCENE_W, type Hotspot } from '@/data/hotspots'
+import { HoodAnimation } from './HoodAnimation'
 import type { Route } from '@/lib/router'
 
 interface Rect {
@@ -110,7 +111,6 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
     : bigScreen
       ? '/scene/taller-v7-4k.webp'
       : '/scene/taller-v7.webp'
-  const capoSrc = isSmall ? '/scene/capo-v7-1280.webp' : bigScreen ? '/scene/capo-v7-4k.webp' : '/scene/capo-v7.webp'
   const garageIndex = hotspots.findIndex((h) => h.route === 'garage')
   const hoodOpen = hovered === garageIndex || zoom?.route === 'garage'
 
@@ -183,19 +183,8 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
                 mask="url(#edgeY)"
                 onLoad={() => setLoaded(true)}
               />
-              {/* Capó abierto: capa recortada a la zona del auto que aparece con un fundido */}
-              <motion.image
-                href={capoSrc}
-                x={134.3}
-                y={67.7}
-                width={643.6}
-                height={502.8}
-                preserveAspectRatio="none"
-                initial={false}
-                animate={{ opacity: hoodOpen ? 1 : 0 }}
-                transition={{ duration: hoodOpen ? 0.55 : 0.4, ease: 'easeInOut' }}
-                pointerEvents="none"
-              />
+              {/* Capó que se abre de verdad (cuadros de video) */}
+              <HoodAnimation open={hoodOpen} />
             </g>
 
             {/* Neón: una capa oscura que se apaga y prende sobre el cartel y su reflejo en el capó */}
