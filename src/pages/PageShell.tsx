@@ -6,10 +6,12 @@ interface Props {
   eyebrow: string
   /** Zona de la escena del taller que se ve detrás del título (object-position). */
   sceneFocus?: string
+  /** Imagen propia de fondo para el encabezado (en vez de la escena del taller). */
+  hero?: React.ReactNode
   children: React.ReactNode
 }
 
-export function PageShell({ eyebrow, sceneFocus, children }: Props) {
+export function PageShell({ eyebrow, sceneFocus, hero, children }: Props) {
   return (
     <motion.main
       initial={{ opacity: 0 }}
@@ -18,7 +20,8 @@ export function PageShell({ eyebrow, sceneFocus, children }: Props) {
       transition={{ duration: 0.6 }}
       className="relative min-h-screen bg-ink"
     >
-      {sceneFocus && (
+      {hero}
+      {!hero && sceneFocus && (
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[75vh] overflow-hidden">
           <motion.img
             src="/scene/taller-v7.webp"

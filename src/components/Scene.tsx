@@ -96,7 +96,19 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
     const r = p.getBoundingClientRect()
     setHovered(i)
     if (reduceMotion) return go(spot.route)
-    setZoom({ x: r.left + r.width / 2, y: r.top + r.height / 2, route: spot.route })
+    let x = r.left + r.width / 2
+    let y = r.top + r.height / 2
+    if (spot.route === 'garage') {
+      // La cámara se mete en el motor (punto del vano del motor en la escena)
+      const svg = p.ownerSVGElement
+      const ctm = svg?.getScreenCTM()
+      if (svg && ctm) {
+        const pt = new DOMPoint(462, 455).matrixTransform(ctm)
+        x = pt.x
+        y = pt.y
+      }
+    }
+    setZoom({ x, y, route: spot.route })
     // red de seguridad por si la animación no dispara el callback
     setTimeout(() => go(spot.route), 1400)
   }
@@ -130,8 +142,8 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
       <motion.div
         className="absolute inset-0"
         style={{ transformOrigin: zoom ? `${zoom.x}px ${zoom.y}px` : '50% 50%', perspective: 1400 }}
-        animate={zoom ? { scale: 2.8 } : { scale: 1 }}
-        transition={{ duration: 1.1, ease: [0.7, 0, 0.84, 0] }}
+        animate={zoom ? { scale: zoom.route === 'garage' ? 6 : 2.8 } : { scale: 1 }}
+        transition={zoom?.route === 'garage' ? { duration: 1.25, ease: [0.6, 0, 0.9, 0.3] } : { duration: 1.1, ease: [0.7, 0, 0.84, 0] }}
         onAnimationComplete={() => zoom && go(zoom.route)}
       >
         <motion.div
@@ -337,12 +349,24 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
         {isTouch ? 'Tocá un objeto del taller' : 'Pasá el mouse por los objetos del taller'}
       </motion.p>
 
+      {/* Al meterse en el motor: un resplandor cálido antes del corte a la sección */}
+      {zoom?.route === 'garage' && (
+        <motion.div
+          className="pointer-events-none fixed inset-0 z-30"
+          style={{
+            background: `radial-gradient(circle at ${zoom.x}px ${zoom.y}px, rgba(255,190,120,0.55), rgba(120,60,20,0.35) 35%, rgba(0,0,0,0) 70%)`,
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.35, duration: 0.6, ease: 'easeIn' }}
+        />
+      )}
       {/* Fundido: la lámpara se prende al entrar, todo se apaga al salir */}
       <motion.div
         className="pointer-events-none fixed inset-0 z-30 bg-black"
         initial={{ opacity: 1 }}
         animate={{ opacity: zoom ? 1 : loaded ? 0 : 1 }}
-        transition={zoom ? { delay: 0.55, duration: 0.55 } : { duration: 1.4, ease: 'easeOut' }}
+        transition={zoom ? (zoom.route === 'garage' ? { delay: 0.8, duration: 0.45 } : { delay: 0.55, duration: 0.55 }) : { duration: 1.4, ease: 'easeOut' }}
       />
     </div>
   )

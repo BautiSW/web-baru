@@ -65,13 +65,32 @@ function ChatViewer() {
   )
 }
 
+/** Fondo del encabezado: el motor del Volvo, como si la cámara acabara de meterse adentro. */
+function EngineHero() {
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-0 h-[92vh] overflow-hidden">
+      <motion.img
+        src="/scene/motor-v1.webp"
+        alt=""
+        initial={{ scale: 1.6, opacity: 0, filter: 'blur(14px) brightness(1.6)' }}
+        animate={{ scale: 1.08, opacity: 0.55, filter: 'blur(0px) brightness(1)' }}
+        transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
+        className="h-full w-full object-cover"
+        style={{ objectPosition: '50% 40%' }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-ink/40 via-ink/55 to-ink" />
+      <div className="absolute inset-0 bg-gradient-to-r from-ink/70 via-transparent to-transparent" />
+    </div>
+  )
+}
+
 export function Garage() {
   const ia = tools.filter((t) => t.category === 'ia')
   const software = tools.filter((t) => t.category === 'software')
   const learning = tools.filter((t) => t.category === 'aprendiendo')
 
   return (
-    <PageShell eyebrow="Under the hood · Cómo funciona por dentro" sceneFocus="12% 55%">
+    <PageShell eyebrow="Under the hood · Cómo funciona por dentro" hero={<EngineHero />}>
       <motion.h1
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
