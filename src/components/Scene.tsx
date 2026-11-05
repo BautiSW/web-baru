@@ -163,11 +163,6 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
               <mask id="edgeY" maskContentUnits="userSpaceOnUse">
                 <rect width={SCENE_W} height={SCENE_H} fill="url(#fadeY)" />
               </mask>
-              <radialGradient id="engineGlow" cx="0.5" cy="0.5" r="0.5">
-                <stop offset="0%" stopColor="#ffd8a0" stopOpacity="0.75" />
-                <stop offset="50%" stopColor="#ffb060" stopOpacity="0.28" />
-                <stop offset="100%" stopColor="#ffb060" stopOpacity="0" />
-              </radialGradient>
               <filter id="softSm" x="-20%" y="-30%" width="140%" height="160%">
                 <feGaussianBlur stdDeviation="7" />
               </filter>
@@ -199,19 +194,6 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
                 initial={false}
                 animate={{ opacity: hoodOpen ? 1 : 0 }}
                 transition={{ duration: hoodOpen ? 0.55 : 0.4, ease: 'easeInOut' }}
-                pointerEvents="none"
-              />
-              {/* Luz cálida que se prende adentro del motor */}
-              <motion.ellipse
-                cx={482}
-                cy={452}
-                rx={150}
-                ry={55}
-                fill="url(#engineGlow)"
-                style={{ mixBlendMode: 'screen' }}
-                initial={false}
-                animate={{ opacity: hoodOpen ? 1 : 0 }}
-                transition={{ duration: 0.6, delay: hoodOpen ? 0.3 : 0 }}
                 pointerEvents="none"
               />
             </g>
