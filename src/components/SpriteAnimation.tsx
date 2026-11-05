@@ -34,33 +34,85 @@ interface Props {
   duration: number
   backDuration?: number
   ease?: Ease
+  /** Cuándo empezar a cargar la hoja (ms), para escalonar y no trabar la entrada. */
+  loadDelay?: number
+}
+
+/**
+ * Cola de carga: las hojas se preparan de a una y solo cuando el mouse está quieto,
+ * así el trabajo pesado (decodificar y subir la imagen a la placa) nunca coincide
+ * con un movimiento y no se siente ningún tirón.
+ */
+let lastMove = 0
+let queueBusy = false
+const queue: (() => Promise<void>)[] = []
+if (typeof window !== 'undefined') {
+  window.addEventListener('mousemove', () => (lastMove = performance.now()), { passive: true })
+}
+function pump() {
+  if (queueBusy || !queue.length) return
+  const quietFor = performance.now() - lastMove
+  if (quietFor < 350) {
+    setTimeout(pump, 350 - quietFor + 20)
+    return
+  }
+  queueBusy = true
+  const job = queue.shift()!
+  job().finally(() => {
+    queueBusy = false
+    setTimeout(pump, 120)
+  })
+}
+function enqueue(job: () => Promise<void>) {
+  queue.push(job)
+  pump()
 }
 
 /** Tramo inicial en el que el cuadro del video entra de a poco sobre la foto. */
 const FADE_IN = 0.08
 
-export function SpriteAnimation({ sheet, active, mode, duration, backDuration = 0.55, ease = [0.3, 0, 0.2, 1] }: Props) {
+const DEFAULT_EASE: Ease = [0.3, 0, 0.2, 1]
+
+export function SpriteAnimation({ sheet, active, mode, duration, backDuration = 0.55, ease = DEFAULT_EASE, loadDelay = 1200 }: Props) {
+  const opts = useRef({ mode, duration, backDuration, ease })
+  opts.current = { mode, duration, backDuration, ease }
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const img = useRef<HTMLImageElement | null>(null)
+  const loadNow = useRef<() => void>(() => {})
+  const requested = useRef(false)
   const progress = useMotionValue(0)
   const alpha = useMotionValue(0)
 
   // Cargar la imagen una sola vez; decode() la prepara sin trabar la página
   useEffect(() => {
     let cancelled = false
-    const im = new Image()
-    im.decoding = 'async'
-    im.src = sheet.src
-    im.decode()
-      .catch(() => undefined)
-      .then(() => {
-        if (cancelled) return
-        img.current = im
-        draw()
+    const load = () =>
+      new Promise<void>((resolve) => {
+        if (cancelled) return resolve()
+        const im = new Image()
+        im.decoding = 'async'
+        im.src = sheet.src
+        im.decode()
+          .catch(() => undefined)
+          .then(() => {
+            if (cancelled) return resolve()
+            img.current = im
+            // "Precalentar": dibujar un cuadro ahora, en tiempo libre, así la primera vez
+            // que se pasa el mouse no hay un tirón por subir la imagen a la placa de video.
+            const warm = document.createElement('canvas')
+            warm.width = 8
+            warm.height = 8
+            warm.getContext('2d')?.drawImage(im, 0, 0, sheet.cw, sheet.ch, 0, 0, 8, 8)
+            draw()
+            requestAnimationFrame(() => resolve())
+          })
       })
+    loadNow.current = () => void load()
+    const t = setTimeout(() => enqueue(load), loadDelay)
     return () => {
       cancelled = true
+      clearTimeout(t)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sheet.src])
@@ -140,13 +192,19 @@ export function SpriteAnimation({ sheet, active, mode, duration, backDuration = 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progress, alpha])
 
+  // Solo reacciona cuando cambia "active" (no en cada render de la escena)
   useEffect(() => {
+    // Si se pasa el mouse antes de que la hoja esté lista, se carga ya mismo
+    if (active && !img.current && !requested.current) {
+      requested.current = true
+      loadNow.current()
+    }
+    const { mode, duration, backDuration, ease } = opts.current
     if (mode === 'reversible') {
       alpha.set(1)
       const c = animate(progress, active ? 1 : 0, active ? { duration, ease } : { duration: backDuration, ease: [0.4, 0, 0.2, 1] })
       return () => c.stop()
     }
-    // oneshot
     if (active) {
       progress.jump(0)
       alpha.jump(1)
@@ -155,7 +213,7 @@ export function SpriteAnimation({ sheet, active, mode, duration, backDuration = 
     }
     const c = animate(alpha, 0, { duration: 0.45, ease: 'easeOut' })
     return () => c.stop()
-  }, [active, mode, duration, backDuration, ease, progress, alpha])
+  }, [active, progress, alpha])
 
   return (
     <div ref={wrapRef} className="pointer-events-none absolute inset-0" aria-hidden="true">

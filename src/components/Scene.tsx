@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, useMotionValue, useSpring } from 'motion/react'
 import { hotspots, SCENE_H, SCENE_W, type Hotspot } from '@/data/hotspots'
 import { SpriteAnimation } from './SpriteAnimation'
-import { capoSheet, mateSheet } from '@/data/sprites'
+import { capoSheet, hojaSheet, mateSheet } from '@/data/sprites'
 import type { Route } from '@/lib/router'
 
 interface Rect {
@@ -81,7 +81,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   const ty = useMotionValue(0)
   const rotY = useSpring(tx, { stiffness: 50, damping: 18, mass: 0.7 })
   const rotX = useSpring(ty, { stiffness: 50, damping: 18, mass: 0.7 })
-  const [liveRect, setLiveRect] = useState<Rect | null>(null)
+  const labelRef = useRef<HTMLDivElement>(null)
 
   const measure = useCallback(() => {
     setRects(
@@ -150,16 +150,29 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
     my.set(ny * -24)
     tx.set(nx * 4)
     ty.set(ny * -3)
-    if (hovered !== null) {
-      const r = polyRefs.current[hovered]?.getBoundingClientRect()
-      if (r) setLiveRect({ left: r.left, top: r.top, width: r.width, height: r.height })
-    }
   }
 
-  const hoveredRect = hovered !== null ? (liveRect ?? rects[hovered]) : null
+  // La etiqueta sigue al objeto mientras se mueve la cámara, sin re-renderizar la escena:
+  // un loop por cuadro que solo actualiza la posición del cartel.
+  useEffect(() => {
+    if (hovered === null || isTouch) return
+    let raf = 0
+    const tick = () => {
+      const el = labelRef.current
+      const r = polyRefs.current[hovered]?.getBoundingClientRect()
+      if (el && r) {
+        el.style.transform = `translate3d(${r.left + r.width / 2}px, ${Math.max(84, r.top - 10)}px, 0) translate(-50%, -100%)`
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    tick()
+    return () => cancelAnimationFrame(raf)
+  }, [hovered, isTouch])
+
   const imgSrc = SCENE_SRC
   const garageIndex = hotspots.findIndex((h) => h.route === 'garage')
   const workIndex = hotspots.findIndex((h) => h.route === 'work')
+  const contactIndex = hotspots.findIndex((h) => h.route === 'contact')
   const hoodOpen = hovered === garageIndex || zoom?.route === 'garage'
 
   return (
@@ -221,9 +234,11 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
           </svg>
 
           {/* 2. Capó que se abre de verdad (cuadros de video), en su propia capa */}
-          <SpriteAnimation sheet={capoSheet} active={hoodOpen} mode="reversible" duration={1.1} />
+          <SpriteAnimation sheet={capoSheet} active={hoodOpen} mode="reversible" duration={1.1} loadDelay={0} />
           {/* Mate: el termo ceba y sale vapor (zona Work) */}
-          <SpriteAnimation sheet={mateSheet} active={hovered === workIndex} mode="oneshot" duration={3.6} />
+          <SpriteAnimation sheet={mateSheet} active={hovered === workIndex} mode="oneshot" duration={3.6} loadDelay={300} />
+          {/* Carpeta: se levanta y da vuelta la hoja (zona Contacto) */}
+          <SpriteAnimation sheet={hojaSheet} active={hovered === contactIndex} mode="oneshot" duration={1.9} loadDelay={2700} />
 
           {/* 3. Efectos de luz: cada uno en su capa, así sus animaciones no redibujan la escena */}
           <Layer className="lamp-glow">
@@ -300,10 +315,8 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
                 role="link"
                 aria-label={`${h.label}: ${h.hint}`}
                 className="cursor-pointer outline-none"
-                onMouseEnter={(e) => {
+                onMouseEnter={() => {
                   if (zoom) return
-                  const r = e.currentTarget.getBoundingClientRect()
-                  setLiveRect({ left: r.left, top: r.top, width: r.width, height: r.height })
                   setHovered(i)
                   setSpotIndex(i)
                   setExplored(true)
@@ -331,22 +344,18 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
       </motion.div>
 
       {/* Etiqueta del objeto (desktop) */}
-      {!isTouch && hoveredRect && !zoom && (
-        <motion.div
-          key={hovered}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
-          className="pointer-events-none fixed z-20 -translate-x-1/2 -translate-y-full"
-          style={{
-            left: hoveredRect.left + hoveredRect.width / 2,
-            top: Math.max(84, hoveredRect.top - 10),
-          }}
-        >
-          <div className="whitespace-nowrap rounded-full border border-white/15 bg-black/70 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-cream backdrop-blur-md">
-            {hotspots[hovered!].label} <span className="text-cream/45">· {hotspots[hovered!].hint}</span> →
-          </div>
-        </motion.div>
+      {!isTouch && hovered !== null && !zoom && (
+        <div ref={labelRef} className="pointer-events-none fixed left-0 top-0 z-20" style={{ willChange: 'transform' }}>
+          <motion.div
+            key={hovered}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className="whitespace-nowrap rounded-full border border-white/15 bg-black/80 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-cream"
+          >
+            {hotspots[hovered].label} <span className="text-cream/45">· {hotspots[hovered].hint}</span> →
+          </motion.div>
+        </div>
       )}
 
       {/* Etiquetas fijas (celular) */}

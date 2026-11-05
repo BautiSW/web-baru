@@ -39,6 +39,7 @@ export const hotspots: Hotspot[] = [
     route: 'contact',
     label: 'Contacto',
     hint: 'Escribime',
-    points: '998,758 1150,696 1298,732 1312,842 1198,848 1088,804',
+    // Incluye el aire sobre la carpeta, por donde vuela la hoja al pasar el mouse
+    points: '985,752 1090,650 1250,645 1312,730 1312,842 1198,848 1088,804',
   },
 ]
