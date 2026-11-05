@@ -22,6 +22,16 @@ function useMedia(query: string) {
   return match
 }
 
+function Layer({ className = '', style, children }: { className?: string; style?: React.CSSProperties; children: React.ReactNode }) {
+  return (
+    <div className={`pointer-events-none absolute inset-0 ${className}`} style={{ willChange: 'opacity', ...style }} aria-hidden="true">
+      <svg viewBox={`0 0 ${SCENE_W} ${SCENE_H}`} preserveAspectRatio="xMidYMid meet" className="h-full w-full">
+        {children}
+      </svg>
+    </div>
+  )
+}
+
 export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   const isTouch = useMedia('(hover: none)')
   const isPortrait = useMedia('(max-aspect-ratio: 11/10)')
@@ -30,6 +40,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
 
   const [loaded, setLoaded] = useState(false)
   const [hovered, setHovered] = useState<number | null>(null)
+  const [spotIndex, setSpotIndex] = useState<number | null>(null)
   const [touched, setTouched] = useState(false)
   const [explored, setExplored] = useState(false)
   const [rects, setRects] = useState<Rect[]>([])
@@ -123,23 +134,19 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
         transition={{ duration: 1.1, ease: [0.7, 0, 0.84, 0] }}
         onAnimationComplete={() => zoom && go(zoom.route)}
       >
-        <motion.div className="absolute inset-0" style={{ x: sx, y: sy, rotateX: rotX, rotateY: rotY, scale: isPortrait ? 1 : 0.9 }}>
+        <motion.div
+          className="absolute inset-0"
+          style={{ x: sx, y: sy, rotateX: rotX, rotateY: rotY, scale: isPortrait ? 1 : 0.9, willChange: 'transform' }}
+        >
+          {/* 1. Escena base (estática: se dibuja una vez) */}
           <svg
             viewBox={`0 0 ${SCENE_W} ${SCENE_H}`}
             preserveAspectRatio="xMidYMid meet"
-            className="h-full w-full"
+            className="absolute inset-0 h-full w-full"
             role="img"
             aria-label="Taller de Bauti: un Volvo 122S blanco, un banco de trabajo con una notebook, un mate, pelotas de fútbol y rugby y una carpeta con llaves."
           >
             <defs>
-              <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="22" />
-              </filter>
-              <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
-                <stop offset="0%" stopColor="#ffc98a" stopOpacity="0.55" />
-                <stop offset="45%" stopColor="#ffb066" stopOpacity="0.14" />
-                <stop offset="100%" stopColor="#ffb066" stopOpacity="0" />
-              </radialGradient>
               <radialGradient id="vignette" cx="0.55" cy="0.5" r="0.75">
                 <stop offset="55%" stopColor="#000" stopOpacity="0" />
                 <stop offset="100%" stopColor="#000" stopOpacity="0.7" />
@@ -163,17 +170,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
               <mask id="edgeY" maskContentUnits="userSpaceOnUse">
                 <rect width={SCENE_W} height={SCENE_H} fill="url(#fadeY)" />
               </mask>
-              <filter id="softSm" x="-20%" y="-30%" width="140%" height="160%">
-                <feGaussianBlur stdDeviation="7" />
-              </filter>
-              <mask id="spot">
-                <rect width={SCENE_W} height={SCENE_H} fill="white" />
-                {hovered !== null && (
-                  <polygon points={hotspots[hovered].points} fill="black" filter="url(#soft)" />
-                )}
-              </mask>
             </defs>
-
             <g mask="url(#edgeX)">
               <image
                 href={imgSrc}
@@ -183,38 +180,75 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
                 mask="url(#edgeY)"
                 onLoad={() => setLoaded(true)}
               />
-              {/* Capó que se abre de verdad (cuadros de video) */}
-              <HoodAnimation open={hoodOpen} />
             </g>
+            <rect width={SCENE_W} height={SCENE_H} fill="url(#vignette)" />
+          </svg>
 
-            {/* Neón: una capa oscura que se apaga y prende sobre el cartel y su reflejo en el capó */}
-            <g pointerEvents="none" aria-hidden="true">
-              <polygon points="484,158 784,132 792,324 488,304" fill="#000" filter="url(#softSm)" className="neon-off" />
-              <g opacity={0.65}>
-                <polygon points="430,412 660,418 668,498 436,486" fill="#000" filter="url(#soft)" className="neon-off" />
-              </g>
+          {/* 2. Capó que se abre de verdad (cuadros de video), en su propia capa */}
+          <HoodAnimation open={hoodOpen} />
+
+          {/* 3. Efectos de luz: cada uno en su capa, así sus animaciones no redibujan la escena */}
+          <Layer className="lamp-glow">
+            <defs>
+              <radialGradient id="lampGrad" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0%" stopColor="#ffc98a" stopOpacity="0.55" />
+                <stop offset="45%" stopColor="#ffb066" stopOpacity="0.14" />
+                <stop offset="100%" stopColor="#ffb066" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+            <circle cx={950} cy={180} r={330} fill="url(#lampGrad)" />
+          </Layer>
+          {/* Neón: una capa oscura que lo "apaga" en parpadeos (cartel + reflejo en el capó) */}
+          <Layer className="neon-off">
+            <defs>
+              <filter id="neonSoft" x="-20%" y="-30%" width="140%" height="160%">
+                <feGaussianBlur stdDeviation="7" />
+              </filter>
+              <filter id="neonSoftLg" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="22" />
+              </filter>
+            </defs>
+            <polygon points="484,158 784,132 792,324 488,304" fill="#000" filter="url(#neonSoft)" />
+            <polygon points="430,412 660,418 668,498 436,486" fill="#000" filter="url(#neonSoftLg)" opacity={0.65} />
+          </Layer>
+          {/* La lámpara apenas falla junto con el neón */}
+          <Layer className="lamp-off">
+            <defs>
+              <filter id="lampSoft" x="-20%" y="-30%" width="140%" height="160%">
+                <feGaussianBlur stdDeviation="7" />
+              </filter>
+              <filter id="lampSoftLg" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="22" />
+              </filter>
+            </defs>
+            <g opacity={0.28}>
+              <ellipse cx={952} cy={170} rx={78} ry={30} fill="#000" filter="url(#lampSoft)" />
+              <ellipse cx={1000} cy={360} rx={300} ry={190} fill="#000" filter="url(#lampSoftLg)" opacity={0.5} />
             </g>
+          </Layer>
 
-            <g className="lamp-glow-wrap">
-              <circle cx={950} cy={180} r={330} fill="url(#lamp)" className="lamp-glow" pointerEvents="none" />
-            </g>
-            {/* La lámpara titila junto con el neón */}
-            <g pointerEvents="none" aria-hidden="true" opacity={0.28}>
-              <ellipse cx={952} cy={170} rx={78} ry={30} fill="#000" filter="url(#softSm)" className="lamp-off" />
-              <ellipse cx={1000} cy={360} rx={300} ry={190} fill="#000" filter="url(#soft)" className="lamp-off" opacity={0.5} />
-            </g>
-            <rect width={SCENE_W} height={SCENE_H} fill="url(#vignette)" pointerEvents="none" />
+          {/* 4. Foco: oscurece todo menos el objeto (la opacidad la anima la GPU) */}
+          <Layer style={{ opacity: hovered !== null ? 0.66 : 0, transition: 'opacity 450ms ease' }}>
+            <defs>
+              <filter id="spotSoft" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="22" />
+              </filter>
+              <mask id="spot">
+                <rect width={SCENE_W} height={SCENE_H} fill="white" />
+                {spotIndex !== null && (
+                  <polygon points={hotspots[spotIndex].points} fill="black" filter="url(#spotSoft)" />
+                )}
+              </mask>
+            </defs>
+            <rect width={SCENE_W} height={SCENE_H} fill="#000" mask="url(#spot)" />
+          </Layer>
 
-            {/* Foco: oscurece todo menos el objeto */}
-            <rect
-              width={SCENE_W}
-              height={SCENE_H}
-              fill="#000"
-              mask="url(#spot)"
-              pointerEvents="none"
-              style={{ opacity: hovered !== null ? 0.66 : 0, transition: 'opacity 450ms ease' }}
-            />
-
+          {/* 5. Zonas cliqueables (invisibles), arriba de todo */}
+          <svg
+            viewBox={`0 0 ${SCENE_W} ${SCENE_H}`}
+            preserveAspectRatio="xMidYMid meet"
+            className="absolute inset-0 h-full w-full"
+          >
             {hotspots.map((h: Hotspot, i) => (
               <polygon
                 key={h.route}
@@ -222,8 +256,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
                   polyRefs.current[i] = el
                 }}
                 points={h.points}
-                fill={hovered === i ? 'rgba(255,190,120,0.06)' : 'transparent'}
-                filter={hovered === i ? 'url(#soft)' : undefined}
+                fill="transparent"
                 pointerEvents="all"
                 tabIndex={0}
                 role="link"
@@ -234,10 +267,14 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
                   const r = e.currentTarget.getBoundingClientRect()
                   setLiveRect({ left: r.left, top: r.top, width: r.width, height: r.height })
                   setHovered(i)
+                  setSpotIndex(i)
                   setExplored(true)
                 }}
                 onMouseLeave={() => !zoom && setHovered(null)}
-                onFocus={() => setHovered(i)}
+                onFocus={() => {
+                  setHovered(i)
+                  setSpotIndex(i)
+                }}
                 onBlur={() => setHovered(null)}
                 onClick={() => {
                   setTouched(true)

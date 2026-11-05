@@ -1,10 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { animate, useMotionValue } from 'motion/react'
+import { SCENE_H, SCENE_W } from '@/data/hotspots'
 
 /**
- * Capó del Volvo abriéndose: cuadros de un video, en una sola imagen (sprite sheet).
- * Al abrir avanza cuadro por cuadro; al cerrar vuelve para atrás.
- * Posición y tamaño en coordenadas de la escena (1677 x 938).
+ * Capó del Volvo abriéndose, dibujado en un <canvas> propio encima de la escena.
+ * Va en una capa separada para que el navegador no tenga que redibujar todo el SVG
+ * (con sus filtros) en cada cuadro: así la animación corre fluida.
+ *
+ * Los cuadros salen de un video, recortados a lo que se mueve y guardados en una
+ * sola imagen (sprite sheet). Entre cuadro y cuadro se mezclan para que no salte.
  */
 const SHEET = {
   src: '/scene/capo-anim-v2.webp',
@@ -12,44 +16,118 @@ const SHEET = {
   cols: 7,
   cw: 812,
   ch: 592,
+  // posición en coordenadas de la escena (1677 x 938)
   x: 116.28,
   y: 90.19,
   w: 664.9,
   h: 485.4,
 }
 
-export function HoodAnimation({ open }: { open: boolean }) {
-  const progress = useMotionValue(0)
-  const [frame, setFrame] = useState(0)
+const OPEN = { duration: 1.1, ease: [0.3, 0, 0.2, 1] as const }
+const CLOSE = { duration: 0.55, ease: [0.4, 0, 0.2, 1] as const }
+/** Primer tramo de la apertura: el capó del video entra de a poco sobre el de la foto. */
+const FADE_IN = 0.14
 
-  useEffect(() => progress.on('change', (v) => setFrame(Math.round(v * (SHEET.frames - 1)))), [progress])
+export function HoodAnimation({ open }: { open: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const frames = useRef<ImageBitmap[] | HTMLCanvasElement[]>([])
+  const progress = useMotionValue(0)
+
+  // Cargar la imagen y cortarla en cuadros una sola vez
+  useEffect(() => {
+    let cancelled = false
+    const img = new Image()
+    img.decoding = 'async'
+    img.src = SHEET.src
+    img.onload = async () => {
+      const list: (ImageBitmap | HTMLCanvasElement)[] = []
+      for (let i = 0; i < SHEET.frames; i++) {
+        const sx = (i % SHEET.cols) * SHEET.cw
+        const sy = Math.floor(i / SHEET.cols) * SHEET.ch
+        if ('createImageBitmap' in window) {
+          list.push(await createImageBitmap(img, sx, sy, SHEET.cw, SHEET.ch))
+        } else {
+          const c = document.createElement('canvas')
+          c.width = SHEET.cw
+          c.height = SHEET.ch
+          c.getContext('2d')!.drawImage(img, sx, sy, SHEET.cw, SHEET.ch, 0, 0, SHEET.cw, SHEET.ch)
+          list.push(c)
+        }
+      }
+      if (!cancelled) {
+        frames.current = list as ImageBitmap[]
+        draw(progress.get())
+      }
+    }
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Ubicar el canvas igual que la escena (SVG con "meet": entra entera y centrada)
+  useEffect(() => {
+    const wrap = wrapRef.current
+    const canvas = canvasRef.current
+    if (!wrap || !canvas) return
+    const place = () => {
+      const W = wrap.clientWidth
+      const H = wrap.clientHeight
+      const s = Math.min(W / SCENE_W, H / SCENE_H)
+      const ox = (W - SCENE_W * s) / 2
+      const oy = (H - SCENE_H * s) / 2
+      const cssW = SHEET.w * s
+      const cssH = SHEET.h * s
+      canvas.style.left = `${ox + SHEET.x * s}px`
+      canvas.style.top = `${oy + SHEET.y * s}px`
+      canvas.style.width = `${cssW}px`
+      canvas.style.height = `${cssH}px`
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      canvas.width = Math.round(Math.min(cssW * dpr, SHEET.cw))
+      canvas.height = Math.round(Math.min(cssH * dpr, SHEET.ch))
+      draw(progress.get())
+    }
+    place()
+    const ro = new ResizeObserver(place)
+    ro.observe(wrap)
+    return () => ro.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function draw(p: number) {
+    const canvas = canvasRef.current
+    const list = frames.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    if (!list.length || p <= 0.001) return
+    const f = p * (SHEET.frames - 1)
+    const a = Math.floor(f)
+    const b = Math.min(a + 1, SHEET.frames - 1)
+    const t = f - a
+    const fade = Math.min(1, p / FADE_IN)
+    ctx.imageSmoothingQuality = 'high'
+    ctx.globalAlpha = fade
+    ctx.drawImage(list[a], 0, 0, canvas.width, canvas.height)
+    if (t > 0.01 && b !== a) {
+      ctx.globalAlpha = fade * t
+      ctx.drawImage(list[b], 0, 0, canvas.width, canvas.height)
+    }
+    ctx.globalAlpha = 1
+  }
+
+  useEffect(() => progress.on('change', draw), [progress])
 
   useEffect(() => {
-    const controls = animate(progress, open ? 1 : 0, {
-      duration: open ? 1.5 : 1.0,
-      ease: open ? [0.45, 0, 0.25, 1] : [0.5, 0, 0.75, 0.4],
-    })
+    const controls = animate(progress, open ? 1 : 0, open ? OPEN : CLOSE)
     return () => controls.stop()
   }, [open, progress])
 
-  const rows = Math.ceil(SHEET.frames / SHEET.cols)
-  const col = frame % SHEET.cols
-  const row = Math.floor(frame / SHEET.cols)
-
   return (
-    <svg
-      x={SHEET.x}
-      y={SHEET.y}
-      width={SHEET.w}
-      height={SHEET.h}
-      viewBox={`${col * SHEET.cw} ${row * SHEET.ch} ${SHEET.cw} ${SHEET.ch}`}
-      preserveAspectRatio="none"
-      overflow="hidden"
-      pointerEvents="none"
-      style={{ opacity: frame === 0 ? 0 : 1 }}
-      aria-hidden="true"
-    >
-      <image href={SHEET.src} width={SHEET.cw * SHEET.cols} height={SHEET.ch * rows} />
-    </svg>
+    <div ref={wrapRef} className="pointer-events-none absolute inset-0" aria-hidden="true">
+      <canvas ref={canvasRef} className="absolute" style={{ willChange: 'contents' }} />
+    </div>
   )
 }

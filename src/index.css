@@ -61,6 +61,7 @@ body {
   mix-blend-mode: screen;
 }
 
+
 /* Cartel de neón (está en la imagen): una capa negra lo "apaga" en parpadeos.
    Ciclo de 12 s: el primer titileo llega a los ~6 s de entrar. */
 @keyframes neon-intro {
