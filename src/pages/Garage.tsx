@@ -1,0 +1,231 @@
+import { useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
+import { PageShell, Reveal } from './PageShell'
+import { aiChatTabs } from '@/data/ai-chats'
+import { tools } from '@/data/tools'
+
+const process = [
+  { n: '01', title: 'Idea', text: 'Arranco por un problema real, no por la tecnología.' },
+  { n: '02', title: 'Prototipo', text: 'Lo construyo con IA, de la idea al primer prototipo funcionando.' },
+  { n: '03', title: 'Iterar', text: 'Pruebo, rompo y ajusto. Si explota, al menos sé dónde.' },
+  { n: '04', title: 'Lanzar', text: 'Lo pongo en manos de gente real y aprendo de lo que pasa.' },
+]
+
+function ChatViewer() {
+  const tabs = aiChatTabs
+  const [active, setActive] = useState(tabs[0].key)
+  const tab = tabs.find((t) => t.key === active)!
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-white/10">
+      <div className="flex gap-1 overflow-x-auto border-b border-white/10 p-2">
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setActive(t.key)}
+            className={`whitespace-nowrap rounded-lg px-3.5 py-2 text-sm transition-colors ${
+              t.key === active ? 'bg-white/12 text-cream' : 'text-cream/55 hover:text-cream'
+            }`}
+          >
+            {t.label}
+            {t.locked && <span className="ml-2 font-mono text-[9px] uppercase tracking-wider text-warm">Pronto</span>}
+          </button>
+        ))}
+      </div>
+      <div className="min-h-[320px] p-5 sm:p-8">
+        <p className="eyebrow mb-6">con {tab.assistant} · conversación de ejemplo</p>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab.key}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-3"
+          >
+            {tab.locked ? (
+              <p className="text-cream/65">{tab.lockedMessage}</p>
+            ) : (
+              tab.messages.map((m, i) => (
+                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <p
+                    className={`max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${
+                      m.role === 'user' ? 'bg-cream text-ink' : 'border border-white/10 bg-white/5 text-cream/85'
+                    }`}
+                  >
+                    {m.text}
+                  </p>
+                </div>
+              ))
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  )
+}
+
+/** Las luces vuelven de a poco: el motor aparece detrás del título después del corte. */
+function EngineHero() {
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-0 h-screen overflow-hidden">
+      <motion.img
+        src="/scene/motor-v1.webp"
+        alt=""
+        initial={{ scale: 1.15, opacity: 0 }}
+        animate={{ scale: 1.04, opacity: [0, 0.18, 0.05, 0.3, 0.42] }}
+        transition={{ delay: 1.7, duration: 2.4, times: [0, 0.15, 0.22, 0.4, 1], ease: 'easeOut' }}
+        className="h-full w-full object-cover"
+        style={{ objectPosition: '50% 40%' }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-ink/50 via-ink/40 to-ink" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,var(--color-ink)_85%)]" />
+    </div>
+  )
+}
+
+/** Título que aparece letra por letra en la oscuridad. */
+function TypedTitle({ text, delay = 0 }: { text: string; delay?: number }) {
+  return (
+    <span aria-label={text}>
+      {text.split('').map((ch, i) => (
+        <motion.span
+          key={i}
+          aria-hidden="true"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: delay + i * 0.045, duration: 0.05 }}
+        >
+          {ch}
+        </motion.span>
+      ))}
+    </span>
+  )
+}
+
+function SectionHead({ n, title, text }: { n: string; title: string; text?: string }) {
+  return (
+    <Reveal className="mb-10">
+      <p className="font-mono text-xs uppercase tracking-[0.2em] text-warm">{n}</p>
+      <h2 className="display mt-3 text-4xl sm:text-6xl">{title}</h2>
+      {text && <p className="mt-4 max-w-xl text-cream/60">{text}</p>}
+    </Reveal>
+  )
+}
+
+const credentials = [
+  { title: 'AI Fluency: Framework & Foundations', org: 'Anthropic', date: 'Ago. 2026', text: 'Uso eficaz, ético y seguro de la IA.' },
+  { title: 'Desarrollo Web', org: 'Coderhouse', date: '2023', text: 'HTML, CSS, JavaScript, UX y marketing digital.' },
+]
+
+export function Garage() {
+  const ia = tools.filter((t) => t.category === 'ia')
+  const software = tools.filter((t) => t.category === 'software')
+  const learning = tools.filter((t) => t.category === 'aprendiendo')
+
+  return (
+    <PageShell eyebrow="" hero={<EngineHero />} chromeDelay={2.2}>
+      {/* Intro: pantalla negra, el texto aparece después del corte de luz */}
+      <section className="flex min-h-[70vh] flex-col justify-center">
+        <motion.p
+          className="font-mono text-xs uppercase tracking-[0.24em] text-cream/50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+        >
+          Cómo funciona por dentro
+        </motion.p>
+        <h1 className="display mt-6 text-6xl sm:text-8xl lg:text-[9.5rem]">
+          <TypedTitle text="Under" delay={0.7} />
+          <br />
+          <TypedTitle text="the hood." delay={0.95} />
+        </h1>
+        <motion.p
+          className="mt-8 max-w-xl text-lg text-cream/70"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.6, duration: 0.8 }}
+        >
+          Abrí el capó: así trabajo, estas son mis herramientas y así uso la IA en un día normal.
+        </motion.p>
+        <motion.div
+          className="mt-16 font-mono text-[10px] uppercase tracking-[0.24em] text-cream/40"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 1, 0.4, 1] }}
+          transition={{ delay: 2.4, duration: 2, repeat: Infinity, repeatType: 'mirror' }}
+        >
+          Scroll ↓
+        </motion.div>
+      </section>
+
+      <section className="mt-24">
+        <SectionHead n="01 · El proceso" title="De la idea a algo que anda." />
+        <div className="grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
+          {process.map((s, i) => (
+            <Reveal key={s.n} delay={i * 0.08} className="bg-ink p-6">
+              <p className="font-mono text-sm text-warm">{s.n}</p>
+              <h3 className="mt-4 font-display text-2xl font-bold">{s.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-cream/60">{s.text}</p>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-32">
+        <SectionHead
+          n="02 · Cómo uso la IA"
+          title="Mi copiloto de todos los días."
+          text="Para experimentar, crear ideas, resolver problemas, agendar, organizarme y aprender. Así le hablo en un día normal."
+        />
+        <Reveal>
+          <ChatViewer />
+        </Reveal>
+      </section>
+
+      <section className="mt-32">
+        <SectionHead n="03 · Herramientas" title="Lo que hay en la caja." />
+        <p className="eyebrow mb-4">IA</p>
+        <div className="mb-10 flex flex-wrap gap-2.5">
+          {ia.map((t) => (
+            <span key={t.name} className="rounded-full border border-warm/40 px-4 py-2 text-sm text-cream">
+              {t.name}
+            </span>
+          ))}
+        </div>
+        <p className="eyebrow mb-4">Software</p>
+        <div className="mb-10 flex flex-wrap gap-2.5">
+          {software.map((t) => (
+            <span key={t.name} className="rounded-full border border-white/15 px-4 py-2 text-sm text-cream/75">
+              {t.name}
+            </span>
+          ))}
+        </div>
+        <p className="eyebrow mb-4">Aprendiendo ahora</p>
+        <div className="flex flex-wrap gap-2.5">
+          {learning.map((t) => (
+            <span key={t.name} className="rounded-full border border-dashed border-white/25 px-4 py-2 text-sm text-cream/60">
+              {t.name}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-32">
+        <SectionHead n="04 · Certificaciones" title="Papeles en regla." />
+        <div className="grid gap-4 sm:grid-cols-2">
+          {credentials.map((c, i) => (
+            <Reveal key={c.title} delay={i * 0.08}>
+              <div className="h-full rounded-2xl border border-white/10 p-6 transition-colors hover:border-warm/40">
+                <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-cream/45">
+                  {c.org} · {c.date}
+                </p>
+                <h3 className="mt-3 font-display text-2xl font-bold">{c.title}</h3>
+                <p className="mt-2 text-sm text-cream/60">{c.text}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+    </PageShell>
+  )
+}

@@ -1,6 +1,6 @@
 export interface ToolItem {
   name: string
-  category: 'ia' | 'software'
+  category: 'ia' | 'software' | 'aprendiendo'
 }
 
 export const tools: ToolItem[] = [
@@ -11,7 +11,8 @@ export const tools: ToolItem[] = [
   { name: 'Midjourney', category: 'ia' },
   { name: 'GitHub Copilot', category: 'ia' },
   { name: 'Base44', category: 'ia' },
-  { name: 'n8n', category: 'ia' },
+  { name: 'n8n', category: 'aprendiendo' },
+  { name: 'Agentes de IA', category: 'aprendiendo' },
   { name: 'Excel', category: 'software' },
   { name: 'Google Suite', category: 'software' },
   { name: 'Microsoft Office', category: 'software' },
