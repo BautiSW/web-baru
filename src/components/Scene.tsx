@@ -23,6 +23,13 @@ function pickSceneSrc() {
   return small ? '/scene/taller-v7-1280.webp' : big ? '/scene/taller-v7-4k.webp' : '/scene/taller-v7.webp'
 }
 const SCENE_SRC = pickSceneSrc()
+/** La misma escena con las luces cortadas (para la transición a cada sección). */
+const OFF_SRC = window.matchMedia('(max-width: 900px)').matches ? '/scene/taller-off-v1-1280.webp' : '/scene/taller-off-v1.webp'
+setTimeout(() => {
+  const im = new Image()
+  im.src = OFF_SRC
+  im.decode().catch(() => undefined)
+}, 3500)
 /** Precarga y decodifica la imagen apenas carga la web; queda lista para volver al taller al instante. */
 let sceneReady = false
 const sceneLoading: Promise<void> = (() => {
@@ -129,29 +136,16 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
     onEnter(route)
   }
 
+  /** Corte de luz: parpadeo, se apaga todo de golpe y después funde a negro. */
+  const CUT = { flicker: 0.6, fadeDelay: 0.8, fade: 1.15 }
   const enter = (i: number) => {
     if (zoom) return
-    const p = polyRefs.current[i]
     const spot = hotspots[i]
-    if (!p) return go(spot.route)
-    const r = p.getBoundingClientRect()
     setHovered(i)
     if (reduceMotion) return go(spot.route)
-    let x = r.left + r.width / 2
-    let y = r.top + r.height / 2
-    if (spot.route === 'garage') {
-      // La cámara se mete en el motor (punto del vano del motor en la escena)
-      const svg = p.ownerSVGElement
-      const ctm = svg?.getScreenCTM()
-      if (svg && ctm) {
-        const pt = new DOMPoint(462, 455).matrixTransform(ctm)
-        x = pt.x
-        y = pt.y
-      }
-    }
-    setZoom({ x, y, route: spot.route })
+    setZoom({ x: 0, y: 0, route: spot.route })
     // red de seguridad por si la animación no dispara el callback
-    setTimeout(() => go(spot.route), 1400)
+    setTimeout(() => go(spot.route), (CUT.fadeDelay + CUT.fade) * 1000 + 250)
   }
 
   const select = (i: number | null) => {
@@ -207,10 +201,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
     <div className="fixed inset-0 overflow-hidden bg-black" onMouseMove={onMove}>
       <motion.div
         className="absolute inset-0"
-        style={{ transformOrigin: zoom ? `${zoom.x}px ${zoom.y}px` : '50% 50%', perspective: 1400 }}
-        animate={zoom ? { scale: zoom.route === 'garage' ? 6 : 2.8 } : { scale: 1 }}
-        transition={zoom?.route === 'garage' ? { duration: 1.25, ease: [0.6, 0, 0.9, 0.3] } : { duration: 1.1, ease: [0.7, 0, 0.84, 0] }}
-        onAnimationComplete={() => zoom && go(zoom.route)}
+        style={{ perspective: 1400 }}
       >
         <motion.div
           className="absolute left-0 top-0 h-full"
@@ -276,12 +267,41 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
             <rect width={SCENE_W} height={SCENE_H} fill="url(#vignette)" />
           </svg>
 
+          {/* Corte de luz: la misma escena con todo apagado, que aparece con un parpadeo */}
+          {zoom && (
+            <motion.div
+              className="pointer-events-none absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 1, 0.15, 1, 0.45, 1] }}
+              transition={{ duration: CUT.flicker, times: [0, 0.12, 0.24, 0.4, 0.55, 0.7], ease: 'linear' }}
+            >
+              <svg viewBox={`0 0 ${SCENE_W} ${SCENE_H}`} preserveAspectRatio="xMidYMid meet" className="h-full w-full">
+                <g mask="url(#edgeX)">
+                  <image href={OFF_SRC} width={SCENE_W} height={SCENE_H} preserveAspectRatio="xMidYMid slice" mask="url(#edgeY)" />
+                </g>
+                <rect width={SCENE_W} height={SCENE_H} fill="url(#vignette)" />
+              </svg>
+            </motion.div>
+          )}
+
           {/* 2. Capó que se abre de verdad (cuadros de video), en su propia capa */}
+          <motion.div
+            className="pointer-events-none absolute inset-0"
+            animate={zoom ? { filter: ['brightness(1)', 'brightness(0.3)', 'brightness(0.9)', 'brightness(0.3)', 'brightness(0.65)', 'brightness(0.3)'] } : { filter: 'brightness(1)' }}
+            transition={zoom ? { duration: CUT.flicker, times: [0, 0.12, 0.24, 0.4, 0.55, 0.7], ease: 'linear' } : { duration: 0 }}
+          >
           <SpriteAnimation sheet={capoSheet} active={hoodOpen} mode="reversible" duration={1.1} loadDelay={0} />
           {/* Mate: el termo ceba y sale vapor (zona Work) */}
           <SpriteAnimation sheet={mateSheet} active={hovered === workIndex} mode="oneshot" duration={3.6} loadDelay={300} />
           {/* Carpeta: se levanta y da vuelta la hoja (zona Contacto) */}
           <SpriteAnimation sheet={hojaSheet} active={hovered === contactIndex} mode="oneshot" duration={1.9} loadDelay={2700} />
+          </motion.div>
+
+          <motion.div
+            className="pointer-events-none absolute inset-0"
+            animate={zoom ? { opacity: [1, 0, 1, 0, 0.6, 0] } : { opacity: 1 }}
+            transition={zoom ? { duration: CUT.flicker, times: [0, 0.12, 0.24, 0.4, 0.55, 0.7], ease: 'linear' } : { duration: 0 }}
+          >
 
           {/* 3. Efectos de luz: cada uno en su capa, así sus animaciones no redibujan la escena */}
           <Layer className="lamp-glow">
@@ -323,8 +343,10 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
             </g>
           </Layer>
 
+          </motion.div>
+
           {/* 4. Foco: oscurece todo menos el objeto (la opacidad la anima la GPU) */}
-          <Layer style={{ opacity: hovered !== null ? 0.66 : 0, transition: 'opacity 450ms ease' }}>
+          <Layer style={{ opacity: hovered !== null && !zoom ? 0.66 : 0, transition: zoom ? 'opacity 80ms linear' : 'opacity 450ms ease' }}>
             <defs>
               <filter id="spotSoft" x="-20%" y="-20%" width="140%" height="140%">
                 <feGaussianBlur stdDeviation="22" />
@@ -442,24 +464,13 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
         {isTouch ? 'Deslizá y tocá un objeto' : 'Pasá el mouse por los objetos del taller'}
       </motion.p>
 
-      {/* Al meterse en el motor: un resplandor cálido antes del corte a la sección */}
-      {zoom?.route === 'garage' && (
-        <motion.div
-          className="pointer-events-none fixed inset-0 z-30"
-          style={{
-            background: `radial-gradient(circle at ${zoom.x}px ${zoom.y}px, rgba(255,190,120,0.55), rgba(120,60,20,0.35) 35%, rgba(0,0,0,0) 70%)`,
-          }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.35, duration: 0.6, ease: 'easeIn' }}
-        />
-      )}
       {/* Fundido: la lámpara se prende al entrar, todo se apaga al salir */}
       <motion.div
         className="pointer-events-none fixed inset-0 z-30 bg-black"
         initial={{ opacity: firstVisit ? 1 : 0.6 }}
         animate={{ opacity: zoom ? 1 : loaded ? 0 : 1 }}
-        transition={zoom ? (zoom.route === 'garage' ? { delay: 0.8, duration: 0.45 } : { delay: 0.55, duration: 0.55 }) : { duration: firstVisit ? 0.8 : 0.35, ease: 'easeOut' }}
+        transition={zoom ? { delay: CUT.fadeDelay, duration: CUT.fade, ease: [0.4, 0, 0.6, 1] } : { duration: firstVisit ? 0.8 : 0.35, ease: 'easeOut' }}
+        onAnimationComplete={() => zoom && go(zoom.route)}
       />
     </div>
   )

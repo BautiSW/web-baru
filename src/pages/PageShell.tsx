@@ -8,10 +8,12 @@ interface Props {
   sceneFocus?: string
   /** Imagen propia de fondo para el encabezado (en vez de la escena del taller). */
   hero?: React.ReactNode
+  /** Retraso (s) para mostrar el botón de volver y el eyebrow, cuando la página tiene su propia intro. */
+  chromeDelay?: number
   children: React.ReactNode
 }
 
-export function PageShell({ eyebrow, sceneFocus, hero, children }: Props) {
+export function PageShell({ eyebrow, sceneFocus, hero, chromeDelay = 0, children }: Props) {
   return (
     <motion.main
       initial={{ opacity: 0 }}
@@ -39,14 +41,17 @@ export function PageShell({ eyebrow, sceneFocus, hero, children }: Props) {
       <div className="pointer-events-none fixed inset-x-0 top-0 z-30 h-24 bg-gradient-to-b from-ink to-transparent" />
 
       <div className="relative mx-auto max-w-6xl px-5 pb-40 pt-28 sm:px-8 sm:pt-32">
-        <button
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: chromeDelay, duration: 0.6 }}
           onClick={() => navigate('home')}
           className="group mb-10 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-cream/60 transition-colors hover:text-cream"
         >
           <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1" />
           Volver al taller
-        </button>
-        <p className="eyebrow mb-5">{eyebrow}</p>
+        </motion.button>
+        {eyebrow && <p className="eyebrow mb-5">{eyebrow}</p>}
         {children}
       </div>
     </motion.main>
