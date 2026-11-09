@@ -5,5 +5,5 @@ export const site = {
   linkedin: 'https://www.linkedin.com/in/bautista-suarez',
   instagram: 'https://instagram.com/bauti.suarez',
   cv: '/cv.pdf',
-  roles: ['Building with AI', 'Business Administration · UTDT', 'AI Builder', 'Cofundador · SAIBA Studios'],
+  roles: ['Building with AI', 'Business Administration · UTDT', 'AI Builder', 'Cofundador · Retruco Agency'],
 }

@@ -33,7 +33,7 @@ export const aiChatTabs: ChatTab[] = [
     label: 'Crear ideas',
     assistant: 'ChatGPT',
     messages: [
-      { role: 'user', text: 'Necesito ideas para el primer posteo de SAIBA Studios. Todavía no tenemos clientes, así que nada de inventar casos.' },
+      { role: 'user', text: 'Necesito ideas para el primer posteo de Retruco Agency. Todavía no tenemos clientes, así que nada de inventar casos.' },
       { role: 'ai', text: 'Mejor: contá un problema común en pymes y cómo se automatiza, en lenguaje simple, sin prometer resultados que no probaste.' },
       { role: 'user', text: 'Me gusta. Armemos ese ángulo.' },
       { role: 'ai', text: 'Dale, arranquemos por el problema, no por nosotros.' },
@@ -55,7 +55,7 @@ export const aiChatTabs: ChatTab[] = [
     label: 'Agendar',
     assistant: 'Claude',
     messages: [
-      { role: 'user', text: 'Tengo entrega de la facu, un llamado con mi socio de SAIBA y quiero avanzar con GoStudy. Decime cómo ordeno el día.' },
+      { role: 'user', text: 'Tengo entrega de la facu, un llamado con mi socio de Retruco y quiero avanzar con GoStudy. Decime cómo ordeno el día.' },
       { role: 'ai', text: 'La facu primero, tiene fecha fija. El llamado a la tarde. GoStudy si te queda pila a la noche.' },
       { role: 'user', text: '¿Y si no me queda pila?' },
       { role: 'ai', text: 'Entonces se corre a mañana. No se te va a caer el mundo encima.' },
@@ -66,8 +66,8 @@ export const aiChatTabs: ChatTab[] = [
     label: 'Organizarme',
     assistant: 'Claude',
     messages: [
-      { role: 'user', text: 'Se me mezclan las tareas de SAIBA, la facu y GoStudy en la cabeza. Ayudame a separarlas.' },
-      { role: 'ai', text: 'Armemos tres columnas: Facu, SAIBA, GoStudy. Todo lo demás es ruido por ahora.' },
+      { role: 'user', text: 'Se me mezclan las tareas de Retruco, la facu y GoStudy en la cabeza. Ayudame a separarlas.' },
+      { role: 'ai', text: 'Armemos tres columnas: Facu, Retruco, GoStudy. Todo lo demás es ruido por ahora.' },
       { role: 'user', text: '¿Y los mails sueltos que no sé dónde van?' },
       { role: 'ai', text: 'Van en una cuarta columna: "Después". Ahí pueden descansar en paz.' },
     ],

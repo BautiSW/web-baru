@@ -14,11 +14,11 @@ export interface Project {
 
 export const projects: Project[] = [
   {
-    title: 'SAIBA Studios',
+    title: 'Retruco Agency',
     role: 'Cofundador',
     period: '2026 – presente',
     logo: 'saiba.png',
-    initials: 'SS',
+    initials: 'RA',
     description:
       'Agencia de desarrollo web e integración de IA para pymes, junto a mi socio: sitios a medida, diseño UI/UX y automatización con chatbots y respuestas automáticas. La idea es simple: impulsar a los negocios a usar la inteligencia artificial en su día a día.',
     tags: ['Desarrollo web', 'UI/UX', 'Automatización con IA'],

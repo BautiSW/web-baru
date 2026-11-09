@@ -137,7 +137,8 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   }
 
   /** Corte de luz: parpadeo, se apaga todo de golpe y después funde a negro. */
-  const CUT = { flicker: 0.6, fadeDelay: 0.8, fade: 1.15 }
+  // Corte: titileo 0,6 s → queda a oscuras y se va apagando → negro total a los 3 s → página
+  const CUT = { flicker: 0.6, total: 3 }
   const enter = (i: number) => {
     if (zoom) return
     const spot = hotspots[i]
@@ -145,7 +146,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
     if (reduceMotion) return go(spot.route)
     setZoom({ x: 0, y: 0, route: spot.route })
     // red de seguridad por si la animación no dispara el callback
-    setTimeout(() => go(spot.route), (CUT.fadeDelay + CUT.fade) * 1000 + 250)
+    setTimeout(() => go(spot.route), CUT.total * 1000 + 300)
   }
 
   const select = (i: number | null) => {
@@ -468,8 +469,8 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
       <motion.div
         className="pointer-events-none fixed inset-0 z-30 bg-black"
         initial={{ opacity: firstVisit ? 1 : 0.6 }}
-        animate={{ opacity: zoom ? 1 : loaded ? 0 : 1 }}
-        transition={zoom ? { delay: CUT.fadeDelay, duration: CUT.fade, ease: [0.4, 0, 0.6, 1] } : { duration: firstVisit ? 0.8 : 0.35, ease: 'easeOut' }}
+        animate={{ opacity: zoom ? [0, 0, 0.3, 1] : loaded ? 0 : 1 }}
+        transition={zoom ? { duration: CUT.total, times: [0, 0.2, 0.6, 1], ease: ['linear', 'easeIn', [0.4, 0, 0.6, 1]] } : { duration: firstVisit ? 0.8 : 0.35, ease: 'easeOut' }}
         onAnimationComplete={() => zoom && go(zoom.route)}
       />
     </div>

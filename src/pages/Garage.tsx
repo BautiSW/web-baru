@@ -65,25 +65,6 @@ function ChatViewer() {
   )
 }
 
-/** Las luces vuelven de a poco: el motor aparece detrás del título después del corte. */
-function EngineHero() {
-  return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 h-screen overflow-hidden">
-      <motion.img
-        src="/scene/motor-v1.webp"
-        alt=""
-        initial={{ scale: 1.15, opacity: 0 }}
-        animate={{ scale: 1.04, opacity: [0, 0.18, 0.05, 0.3, 0.42] }}
-        transition={{ delay: 1.7, duration: 2.4, times: [0, 0.15, 0.22, 0.4, 1], ease: 'easeOut' }}
-        className="h-full w-full object-cover"
-        style={{ objectPosition: '50% 40%' }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-ink/50 via-ink/40 to-ink" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,var(--color-ink)_85%)]" />
-    </div>
-  )
-}
-
 /** Título que aparece letra por letra en la oscuridad. */
 function TypedTitle({ text, delay = 0 }: { text: string; delay?: number }) {
   return (
@@ -124,7 +105,7 @@ export function Garage() {
   const learning = tools.filter((t) => t.category === 'aprendiendo')
 
   return (
-    <PageShell eyebrow="" hero={<EngineHero />} chromeDelay={2.2}>
+    <PageShell eyebrow="" chromeDelay={1.6}>
       {/* Intro: pantalla negra, el texto aparece después del corte de luz */}
       <section className="flex min-h-[70vh] flex-col justify-center">
         <motion.p
