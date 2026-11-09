@@ -28,6 +28,7 @@ const OFF_SRC = window.matchMedia('(max-width: 900px)').matches ? '/scene/taller
 setTimeout(() => {
   const im = new Image()
   im.src = OFF_SRC
+  new Image().src = '/scene/capo-cutmask-v1.png'
   // Precarga la escena ASCII de Under the hood cuando el home ya está tranquilo
   setTimeout(() => {
     const load = () => fetch('/hero-atlas.json').catch(() => undefined)
@@ -304,9 +305,9 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
           >
           <SpriteAnimation sheet={capoSheet} active={hoodOpen} mode="reversible" duration={1.1} loadDelay={0} />
           {/* Mate: el termo ceba y sale vapor (zona Work) */}
-          <SpriteAnimation sheet={mateSheet} active={hovered === workIndex} mode="reversible" duration={3.6} backDuration={1.8} loadDelay={300} />
+          <SpriteAnimation sheet={mateSheet} active={hovered === workIndex} mode="hold" duration={3.6} backDuration={1.8} loadDelay={300} />
           {/* Carpeta: se levanta y da vuelta la hoja (zona Contacto) */}
-          <SpriteAnimation sheet={hojaSheet} active={hovered === contactIndex} mode="reversible" duration={1.9} backDuration={1.1} loadDelay={2700} />
+          <SpriteAnimation sheet={hojaSheet} active={hovered === contactIndex} mode="hold" duration={1.9} backDuration={1.1} loadDelay={2700} />
           </motion.div>
 
           {/* El apagado también va arriba de las animaciones (si no, el neón queda prendido en los cuadros
@@ -492,13 +493,11 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   )
 }
 
-// Silueta del auto con el capó abierto (más ajustada que la zona cliqueable, para no dejar ver el neón)
-const CAR_POLY = '0,295 120,300 180,350 465,100 476,104 498,168 514,239 600,420 715,470 722,640 665,700 625,800 360,805 0,895'
 const FLICKER_TIMES = [0, 0.12, 0.24, 0.4, 0.55, 0.7]
 
 /** Capa con el taller apagado, que entra con parpadeo. clipCar = todo menos el auto. */
 function OffLayer({ clipCar = false }: { clipCar?: boolean }) {
-  const id = clipCar ? 'offClipCar' : undefined
+  const id = clipCar ? 'offMaskCar' : undefined
   return (
     <motion.div
       className="pointer-events-none absolute inset-0"
@@ -509,12 +508,14 @@ function OffLayer({ clipCar = false }: { clipCar?: boolean }) {
       <svg viewBox={`0 0 ${SCENE_W} ${SCENE_H}`} preserveAspectRatio="xMidYMid meet" className="h-full w-full">
         {id && (
           <defs>
-            <clipPath id={id}>
-              <path clipRule="evenodd" fillRule="evenodd" d={`M-50,-50H${SCENE_W + 50}V${SCENE_H + 50}H-50Z M${CAR_POLY.trim().split(/\s+/).join(' L')}Z`} />
-            </clipPath>
+            {/* Máscara: todo apagado menos el capó abierto y el motor (sacada de los cuadros del capó) */}
+            <mask id={id} maskUnits="userSpaceOnUse" x={0} y={0} width={SCENE_W} height={SCENE_H}>
+              <rect width={SCENE_W} height={SCENE_H} fill="#fff" />
+              <image href="/scene/capo-cutmask-v1.png" x={capoSheet.x} y={capoSheet.y} width={capoSheet.w} height={capoSheet.h} preserveAspectRatio="none" />
+            </mask>
           </defs>
         )}
-        <g clipPath={id ? `url(#${id})` : undefined}>
+        <g mask={id ? `url(#${id})` : undefined}>
           <g mask="url(#edgeX)">
             <image href={OFF_SRC} width={SCENE_W} height={SCENE_H} preserveAspectRatio="xMidYMid slice" mask="url(#edgeY)" />
           </g>

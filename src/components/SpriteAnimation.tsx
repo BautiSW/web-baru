@@ -30,7 +30,7 @@ interface Props {
    * reversible: avanza al activarse y vuelve para atrás al soltar (capó).
    * oneshot: se reproduce una vez desde el principio y, al soltar, se desvanece (mate).
    */
-  mode: 'reversible' | 'oneshot'
+  mode: 'reversible' | 'oneshot' | 'hold'
   duration: number
   backDuration?: number
   ease?: Ease
@@ -210,6 +210,39 @@ export function SpriteAnimation({ sheet, active, mode, duration, backDuration = 
         return () => c.stop()
       }
       if (p <= 0.001) return
+      const c = animate(progress, 0, {
+        duration: Math.max(0.15, backDuration * p),
+        ease: [0.4, 0, 0.2, 1],
+        onComplete: () => alpha.jump(0),
+      })
+      return () => c.stop()
+    }
+    if (mode === 'hold') {
+      // Se reproduce entera. Si se suelta a mitad de camino, vuelve para atrás;
+      // si llegó al final, queda en el último cuadro.
+      const p = progress.get()
+      if (active) {
+        if (p >= 0.999) {
+          // Ya había terminado: se funde al estado original y arranca de nuevo
+          let c2: { stop: () => void } | null = null
+          const c1 = animate(alpha, 0, {
+            duration: 0.25,
+            onComplete: () => {
+              progress.jump(0)
+              alpha.jump(1)
+              c2 = animate(progress, 1, { duration, ease: 'linear' })
+            },
+          })
+          return () => {
+            c1.stop()
+            c2?.stop()
+          }
+        }
+        alpha.jump(1)
+        const c = animate(progress, 1, { duration: Math.max(0.15, duration * (1 - p)), ease: 'linear' })
+        return () => c.stop()
+      }
+      if (p <= 0.001 || p >= 0.999) return
       const c = animate(progress, 0, {
         duration: Math.max(0.15, backDuration * p),
         ease: [0.4, 0, 0.2, 1],
