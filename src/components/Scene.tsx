@@ -102,6 +102,9 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   }, [mobile, vw, vh])
 
   const [loaded, setLoaded] = useState(sceneReady)
+  // "shown": la imagen ya está pintada en pantalla (no solo decodificada). Recién ahí se levanta el negro,
+  // así las luces (lámpara, neón) nunca aparecen antes que el taller.
+  const [shown, setShown] = useState(false)
   const [firstVisit] = useState(() => !seenOnce)
   const [hovered, setHovered] = useState<number | null>(null)
   const [spotIndex, setSpotIndex] = useState<number | null>(null)
@@ -123,6 +126,22 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   const rotX = useSpring(ty, { stiffness: 50, damping: 18, mass: 0.7 })
   const labelRef = useRef<HTMLDivElement>(null)
 
+
+  useEffect(() => {
+    if (!loaded) return
+    let r1 = 0
+    let r2 = 0
+    const t = setTimeout(() => {
+      r1 = requestAnimationFrame(() => {
+        r2 = requestAnimationFrame(() => setShown(true))
+      })
+    }, 80)
+    return () => {
+      clearTimeout(t)
+      cancelAnimationFrame(r1)
+      cancelAnimationFrame(r2)
+    }
+  }, [loaded])
 
   // Mostrar la escena apenas la imagen esté decodificada (con red de seguridad)
   useEffect(() => {
@@ -285,9 +304,9 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
           >
           <SpriteAnimation sheet={capoSheet} active={hoodOpen} mode="reversible" duration={1.1} loadDelay={0} />
           {/* Mate: el termo ceba y sale vapor (zona Work) */}
-          <SpriteAnimation sheet={mateSheet} active={hovered === workIndex} mode="oneshot" duration={3.6} loadDelay={300} />
+          <SpriteAnimation sheet={mateSheet} active={hovered === workIndex} mode="reversible" duration={3.6} backDuration={1.8} loadDelay={300} />
           {/* Carpeta: se levanta y da vuelta la hoja (zona Contacto) */}
-          <SpriteAnimation sheet={hojaSheet} active={hovered === contactIndex} mode="oneshot" duration={1.9} loadDelay={2700} />
+          <SpriteAnimation sheet={hojaSheet} active={hovered === contactIndex} mode="reversible" duration={1.9} backDuration={1.1} loadDelay={2700} />
           </motion.div>
 
           {/* El apagado también va arriba de las animaciones (si no, el neón queda prendido en los cuadros
@@ -464,9 +483,9 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
       {/* Fundido: la lámpara se prende al entrar, todo se apaga al salir */}
       <motion.div
         className="pointer-events-none fixed inset-0 z-30 bg-black"
-        initial={{ opacity: firstVisit ? 1 : 0.6 }}
-        animate={{ opacity: zoom ? [0, 0, 0.3, 1] : loaded ? 0 : 1 }}
-        transition={zoom ? { duration: CUT.total, times: [0, 0.2, 0.6, 1], ease: ['linear', 'easeIn', [0.4, 0, 0.6, 1]] } : { duration: firstVisit ? 0.8 : 0.35, ease: 'easeOut' }}
+        initial={{ opacity: 1 }}
+        animate={{ opacity: zoom ? [0, 0, 0.3, 1] : shown ? 0 : 1 }}
+        transition={zoom ? { duration: CUT.total, times: [0, 0.2, 0.6, 1], ease: ['linear', 'easeIn', [0.4, 0, 0.6, 1]] } : { duration: firstVisit ? 0.8 : 0.55, ease: [0.25, 0.1, 0.25, 1] }}
         onAnimationComplete={() => zoom && go(zoom.route)}
       />
     </div>

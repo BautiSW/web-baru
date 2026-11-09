@@ -88,7 +88,7 @@ export const aiChatTabs: ChatTab[] = [
     label: 'Agentes',
     assistant: '—',
     locked: true,
-    lockedMessage: 'Un agente que contesta, agenda y hace el seguimiento solo. Está en el taller: cuando salga, lo vas a poder probar acá mismo.',
+    lockedMessage: 'Hoy estoy aprendiendo cómo funcionan los agentes y a construirlos desde cero. Cuando tenga el primero andando, lo vas a poder probar acá mismo.',
     messages: [],
   },
 ]

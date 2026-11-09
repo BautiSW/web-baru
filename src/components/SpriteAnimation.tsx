@@ -201,8 +201,20 @@ export function SpriteAnimation({ sheet, active, mode, duration, backDuration = 
     }
     const { mode, duration, backDuration, ease } = opts.current
     if (mode === 'reversible') {
-      alpha.set(1)
-      const c = animate(progress, active ? 1 : 0, active ? { duration, ease } : { duration: backDuration, ease: [0.4, 0, 0.2, 1] })
+      // Ida y vuelta con el mismo movimiento: si se suelta a mitad de camino, vuelve desde ahí
+      // (la duración se ajusta a lo que falta recorrer)
+      const p = progress.get()
+      if (active) {
+        alpha.jump(1)
+        const c = animate(progress, 1, { duration: Math.max(0.15, duration * (1 - p)), ease: p > 0.02 ? 'linear' : ease })
+        return () => c.stop()
+      }
+      if (p <= 0.001) return
+      const c = animate(progress, 0, {
+        duration: Math.max(0.15, backDuration * p),
+        ease: [0.4, 0, 0.2, 1],
+        onComplete: () => alpha.jump(0),
+      })
       return () => c.stop()
     }
     if (active) {

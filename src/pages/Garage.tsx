@@ -123,7 +123,7 @@ function LiveChat() {
       </div>
 
       <div className="flex items-center justify-between px-5 pt-5 sm:px-8 sm:pt-7">
-        <p className="eyebrow">con {tab.assistant}</p>
+        <p className="eyebrow">{tab.label}</p>
         {phase === 'done' && shown > 0 && (
           <button
             onClick={() => setRunId((n) => n + 1)}
@@ -190,7 +190,7 @@ function LiveChat() {
               {draft ? (
                 <span className="text-cream">{draft}</span>
               ) : (
-                <span className="text-cream/30">Escribile a {tab.assistant}…</span>
+                <span className="text-cream/30">Escribí un mensaje…</span>
               )}
               {phase === 'typing' && (
                 <motion.span
