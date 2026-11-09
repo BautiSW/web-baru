@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, useInView } from 'motion/react'
+import { AnimatePresence, motion, useInView } from 'motion/react'
 import { ArrowUp, RotateCcw } from 'lucide-react'
 import { PageShell, Reveal } from './PageShell'
 import { AtlasHero } from '@/components/AtlasHero'
@@ -246,6 +246,14 @@ function SectionHead({ n, title, text }: { n: string; title: string; text?: stri
 }
 
 export function Garage() {
+  const [openCert, setOpenCert] = useState<number | null>(null)
+  useEffect(() => {
+    if (openCert === null) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpenCert(null)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [openCert])
+
   return (
     <PageShell eyebrow="" hero={<AtlasHero />} chromeDelay={1.6}>
       {/* Intro: arranca en negro y aparece la escena ASCII de fondo */}
@@ -343,14 +351,14 @@ export function Garage() {
         <div className="grid gap-4 sm:grid-cols-2">
           {credentials.map((c, i) => (
             <Reveal key={c.title} delay={i * 0.08}>
-              <a
-                href={c.img}
-                target="_blank"
-                rel="noreferrer"
-                className="group block h-full overflow-hidden rounded-2xl border border-white/10 transition-colors hover:border-warm/40"
+              <button
+                type="button"
+                onClick={() => setOpenCert(i)}
+                className="group block h-full w-full cursor-zoom-in overflow-hidden rounded-2xl border border-white/10 text-left transition-colors hover:border-warm/40"
               >
                 <div className="aspect-[4/3] overflow-hidden bg-white/5">
-                  <img
+                  <motion.img
+                    layoutId={`cert-${i}`}
                     src={c.img}
                     alt={`Certificado ${c.title} · ${c.org}`}
                     loading="lazy"
@@ -364,11 +372,35 @@ export function Garage() {
                   <h3 className="mt-3 font-display text-2xl font-bold">{c.title}</h3>
                   <p className="mt-2 text-sm text-cream/60">{c.text}</p>
                 </div>
-              </a>
+              </button>
             </Reveal>
           ))}
         </div>
       </section>
+
+      {/* Certificado agrandado en la misma página */}
+      <AnimatePresence>
+        {openCert !== null && (
+          <motion.div
+            key="cert"
+            className="fixed inset-0 z-[60] flex cursor-zoom-out items-center justify-center bg-black/85 p-4 backdrop-blur-sm sm:p-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            onClick={() => setOpenCert(null)}
+          >
+            <motion.img
+              layoutId={`cert-${openCert}`}
+              src={credentials[openCert].img}
+              alt={`Certificado ${credentials[openCert].title}`}
+              className="max-h-full max-w-full rounded-xl object-contain shadow-2xl"
+              transition={{ type: 'spring', stiffness: 260, damping: 30 }}
+            />
+            <span className="absolute right-5 top-5 font-mono text-[10px] uppercase tracking-[0.2em] text-cream/60">Cerrar ✕</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </PageShell>
   )
 }

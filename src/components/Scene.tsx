@@ -275,21 +275,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
           </svg>
 
           {/* Corte de luz: la misma escena con todo apagado, que aparece con un parpadeo */}
-          {zoom && (
-            <motion.div
-              className="pointer-events-none absolute inset-0"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0, 1, 0.15, 1, 0.45, 1] }}
-              transition={{ duration: CUT.flicker, times: [0, 0.12, 0.24, 0.4, 0.55, 0.7], ease: 'linear' }}
-            >
-              <svg viewBox={`0 0 ${SCENE_W} ${SCENE_H}`} preserveAspectRatio="xMidYMid meet" className="h-full w-full">
-                <g mask="url(#edgeX)">
-                  <image href={OFF_SRC} width={SCENE_W} height={SCENE_H} preserveAspectRatio="xMidYMid slice" mask="url(#edgeY)" />
-                </g>
-                <rect width={SCENE_W} height={SCENE_H} fill="url(#vignette)" />
-              </svg>
-            </motion.div>
-          )}
+          {zoom && <OffLayer />}
 
           {/* 2. Capó que se abre de verdad (cuadros de video), en su propia capa */}
           <motion.div
@@ -303,6 +289,10 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
           {/* Carpeta: se levanta y da vuelta la hoja (zona Contacto) */}
           <SpriteAnimation sheet={hojaSheet} active={hovered === contactIndex} mode="oneshot" duration={1.9} loadDelay={2700} />
           </motion.div>
+
+          {/* El apagado también va arriba de las animaciones (si no, el neón queda prendido en los cuadros
+              del capó). Si el capó está abierto, se deja ver solo el auto. */}
+          {zoom && <OffLayer clipCar={hoodOpen} />}
 
           <motion.div
             className="pointer-events-none absolute inset-0"
@@ -480,5 +470,38 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
         onAnimationComplete={() => zoom && go(zoom.route)}
       />
     </div>
+  )
+}
+
+// Silueta del auto con el capó abierto (más ajustada que la zona cliqueable, para no dejar ver el neón)
+const CAR_POLY = '0,295 120,300 180,350 465,100 476,104 498,168 514,239 600,420 715,470 722,640 665,700 625,800 360,805 0,895'
+const FLICKER_TIMES = [0, 0.12, 0.24, 0.4, 0.55, 0.7]
+
+/** Capa con el taller apagado, que entra con parpadeo. clipCar = todo menos el auto. */
+function OffLayer({ clipCar = false }: { clipCar?: boolean }) {
+  const id = clipCar ? 'offClipCar' : undefined
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-0"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: [0, 1, 0.15, 1, 0.45, 1] }}
+      transition={{ duration: 0.6, times: FLICKER_TIMES, ease: 'linear' }}
+    >
+      <svg viewBox={`0 0 ${SCENE_W} ${SCENE_H}`} preserveAspectRatio="xMidYMid meet" className="h-full w-full">
+        {id && (
+          <defs>
+            <clipPath id={id}>
+              <path clipRule="evenodd" fillRule="evenodd" d={`M-50,-50H${SCENE_W + 50}V${SCENE_H + 50}H-50Z M${CAR_POLY.trim().split(/\s+/).join(' L')}Z`} />
+            </clipPath>
+          </defs>
+        )}
+        <g clipPath={id ? `url(#${id})` : undefined}>
+          <g mask="url(#edgeX)">
+            <image href={OFF_SRC} width={SCENE_W} height={SCENE_H} preserveAspectRatio="xMidYMid slice" mask="url(#edgeY)" />
+          </g>
+          <rect width={SCENE_W} height={SCENE_H} fill="url(#vignette)" />
+        </g>
+      </svg>
+    </motion.div>
   )
 }
