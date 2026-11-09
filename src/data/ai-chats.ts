@@ -44,10 +44,10 @@ export const aiChatTabs: ChatTab[] = [
     label: 'Resolver problemas',
     assistant: 'Claude Code',
     messages: [
-      { role: 'user', text: 'wAise me tira un error raro al guardar un proceso y no entiendo por qué.' },
-      { role: 'ai', text: 'Pasame el stack trace y el fragmento donde se guarda. Puede ser un campo que llega vacío.' },
-      { role: 'user', text: 'Ahí va. Y sí, encontré el campo.' },
-      { role: 'ai', text: 'Era eso: el id llegaba undefined antes de que cargara el formulario. Validalo antes del submit y listo.' },
+      { role: 'user', text: 'Mi web carga lentísimo en el celu y no entiendo por qué.' },
+      { role: 'ai', text: 'Pasame el link. Lo primero que miro son las imágenes: casi siempre son el problema.' },
+      { role: 'user', text: 'Sí, había fotos de 5 MB.' },
+      { role: 'ai', text: 'Ahí está. Las paso a WebP y a tamaño de celular: debería cargar en un segundo.' },
     ],
   },
   {
@@ -55,10 +55,10 @@ export const aiChatTabs: ChatTab[] = [
     label: 'Agendar',
     assistant: 'Claude',
     messages: [
-      { role: 'user', text: 'Tengo entrega de la facu, un llamado con mi socio de Retruco y quiero avanzar con GoStudy. Decime cómo ordeno el día.' },
-      { role: 'ai', text: 'La facu primero, tiene fecha fija. El llamado a la tarde. GoStudy si te queda pila a la noche.' },
-      { role: 'user', text: '¿Y si no me queda pila?' },
-      { role: 'ai', text: 'Entonces se corre a mañana. No se te va a caer el mundo encima.' },
+      { role: 'user', text: 'Esta semana tengo dos parciales, una entrega y una reunión con un cliente. ¿Cómo me organizo?' },
+      { role: 'ai', text: 'Primero lo que tiene fecha fija: parciales y reunión. La entrega la partimos en tres bloques de dos horas.' },
+      { role: 'user', text: '¿Y si se me complica algún día?' },
+      { role: 'ai', text: 'Dejamos el viernes a la tarde libre de colchón. Siempre se complica algo.' },
     ],
   },
   {
@@ -66,10 +66,10 @@ export const aiChatTabs: ChatTab[] = [
     label: 'Organizarme',
     assistant: 'Claude',
     messages: [
-      { role: 'user', text: 'Se me mezclan las tareas de Retruco, la facu y GoStudy en la cabeza. Ayudame a separarlas.' },
-      { role: 'ai', text: 'Armemos tres columnas: Facu, Retruco, GoStudy. Todo lo demás es ruido por ahora.' },
-      { role: 'user', text: '¿Y los mails sueltos que no sé dónde van?' },
-      { role: 'ai', text: 'Van en una cuarta columna: "Después". Ahí pueden descansar en paz.' },
+      { role: 'user', text: 'Tengo mil cosas en la cabeza: facu, laburo, mails, ideas sueltas. Ayudame a ordenarlas.' },
+      { role: 'ai', text: 'Cuatro listas: hoy, esta semana, algún día y ruido. Lo que cae en ruido, se borra.' },
+      { role: 'user', text: '¿Y las ideas sueltas?' },
+      { role: 'ai', text: 'Van a "algún día". No se pierden, pero tampoco te sacan foco.' },
     ],
   },
   {

@@ -1,12 +1,10 @@
-import { Suspense, lazy, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, useInView } from 'motion/react'
 import { ArrowUp, RotateCcw } from 'lucide-react'
 import { PageShell, Reveal } from './PageShell'
+import { AtlasHero } from '@/components/AtlasHero'
 import { aiChatTabs, type ChatTab } from '@/data/ai-chats'
 import { toolGroups } from '@/data/tools'
-
-// La escena ASCII (y su SDK) va en un chunk aparte: no pesa en el home
-const AsciiHero = lazy(() => import('@/components/AsciiHero').then((m) => ({ default: m.AsciiHero })))
 
 const process = [
   { n: '01', title: 'Detectar', text: 'Todo arranca con algo que me molesta o que veo que se puede hacer mejor.' },
@@ -16,8 +14,8 @@ const process = [
 ]
 
 const credentials = [
-  { title: 'AI Fluency: Framework & Foundations', org: 'Anthropic', date: 'Ago. 2026', text: 'Uso eficaz, ético y seguro de la IA.' },
-  { title: 'Desarrollo Web', org: 'Coderhouse', date: '2023', text: 'HTML, CSS, JavaScript, UX y marketing digital.' },
+  { title: 'AI Fluency: Framework & Foundations', org: 'Anthropic', date: 'Ago. 2026', text: 'Uso eficaz, ético y seguro de la IA.', img: '/certs/anthropic-ai-fluency.webp' },
+  { title: 'Desarrollo Web', org: 'Coderhouse', date: 'Abr. 2023', text: 'HTML, CSS, JavaScript, UX y marketing digital. 38 horas.', img: '/certs/coderhouse.webp' },
 ]
 
 /* ───────────── Chat en vivo ───────────── */
@@ -249,9 +247,9 @@ function SectionHead({ n, title, text }: { n: string; title: string; text?: stri
 
 export function Garage() {
   return (
-    <PageShell eyebrow="" hero={<Suspense fallback={<div className="absolute inset-x-0 top-0 h-screen bg-black" />}><AsciiHero delay={0.3} /></Suspense>} chromeDelay={1.6}>
+    <PageShell eyebrow="" hero={<AtlasHero />} chromeDelay={1.6}>
       {/* Intro: arranca en negro y aparece la escena ASCII de fondo */}
-      <section className="flex min-h-[calc(100svh-14rem)] flex-col justify-end pb-10 sm:justify-center sm:pb-0 lg:items-end">
+      <section className="flex min-h-[calc(100svh-14rem)] flex-col justify-end pb-10 sm:justify-center sm:pb-0 lg:-mt-12 lg:min-h-[calc(100svh-11rem)] lg:items-end">
         <div className="lg:w-auto">
           <motion.div
             className="mb-5 flex items-center gap-2 opacity-60"
@@ -314,7 +312,7 @@ export function Garage() {
 
       <section className="mt-32">
         <SectionHead n="03 · Herramientas" title="Caja de herramientas." />
-        <div className="grid gap-10 lg:grid-cols-3">
+        <div className="grid gap-x-12 gap-y-10 md:grid-cols-2">
           {toolGroups.map((g, gi) => (
             <div key={g.title}>
               <Reveal delay={gi * 0.08}>
@@ -345,13 +343,28 @@ export function Garage() {
         <div className="grid gap-4 sm:grid-cols-2">
           {credentials.map((c, i) => (
             <Reveal key={c.title} delay={i * 0.08}>
-              <div className="h-full rounded-2xl border border-white/10 p-6 transition-colors hover:border-warm/40">
-                <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-cream/45">
-                  {c.org} · {c.date}
-                </p>
-                <h3 className="mt-3 font-display text-2xl font-bold">{c.title}</h3>
-                <p className="mt-2 text-sm text-cream/60">{c.text}</p>
-              </div>
+              <a
+                href={c.img}
+                target="_blank"
+                rel="noreferrer"
+                className="group block h-full overflow-hidden rounded-2xl border border-white/10 transition-colors hover:border-warm/40"
+              >
+                <div className="aspect-[4/3] overflow-hidden bg-white/5">
+                  <img
+                    src={c.img}
+                    alt={`Certificado ${c.title} · ${c.org}`}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                  />
+                </div>
+                <div className="p-6">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-cream/45">
+                    {c.org} · {c.date}
+                  </p>
+                  <h3 className="mt-3 font-display text-2xl font-bold">{c.title}</h3>
+                  <p className="mt-2 text-sm text-cream/60">{c.text}</p>
+                </div>
+              </a>
             </Reveal>
           ))}
         </div>

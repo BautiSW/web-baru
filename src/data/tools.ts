@@ -15,8 +15,7 @@ export const toolGroups: ToolGroup[] = [
   {
     title: 'IA',
     items: [
-      t('Claude', 'claude'),
-      t('Claude Code', 'claude'),
+      t('Claude / Claude Code', 'claude'),
       t('ChatGPT', 'chatgpt'),
       t('Gemini', 'gemini'),
       t('Midjourney', 'midjourney'),
@@ -30,19 +29,11 @@ export const toolGroups: ToolGroup[] = [
   },
   {
     title: 'Desarrollo y productividad',
-    items: [
-      t('VS Code', 'vscode'),
-      t('GitHub', 'github'),
-      t('Vercel', 'vercel'),
-      t('Supabase', 'supabase'),
-      t('n8n', 'n8n'),
-      t('Excel', 'excel'),
-      t('Gmail', 'gmail'),
-      t('Google Calendar', 'gcalendar'),
-      t('Google Drive', 'gdrive'),
-      t('Google Meet', 'gmeet'),
-      t('Obsidian', 'obsidian'),
-    ],
+    items: [t('VS Code', 'vscode'), t('GitHub', 'github'), t('Vercel', 'vercel'), t('Supabase', 'supabase'), t('n8n', 'n8n'), t('Obsidian', 'obsidian')],
+  },
+  {
+    title: 'Google Suite y Excel',
+    items: [t('Excel', 'excel'), t('Gmail', 'gmail'), t('Google Calendar', 'gcalendar'), t('Google Drive', 'gdrive'), t('Google Meet', 'gmeet')],
   },
 ]
 

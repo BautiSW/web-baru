@@ -30,7 +30,7 @@ setTimeout(() => {
   im.src = OFF_SRC
   // Precarga la escena ASCII de Under the hood cuando el home ya está tranquilo
   setTimeout(() => {
-    const load = () => import('@/components/AsciiHero')
+    const load = () => fetch('/hero-atlas.json').catch(() => undefined)
     if ('requestIdleCallback' in window) window.requestIdleCallback(load, { timeout: 4000 })
     else load()
   }, 4000)
