@@ -28,6 +28,12 @@ const OFF_SRC = window.matchMedia('(max-width: 900px)').matches ? '/scene/taller
 setTimeout(() => {
   const im = new Image()
   im.src = OFF_SRC
+  // Precarga la escena ASCII de Under the hood cuando el home ya está tranquilo
+  setTimeout(() => {
+    const load = () => import('@/components/AsciiHero')
+    if ('requestIdleCallback' in window) window.requestIdleCallback(load, { timeout: 4000 })
+    else load()
+  }, 4000)
   im.decode().catch(() => undefined)
 }, 3500)
 /** Precarga y decodifica la imagen apenas carga la web; queda lista para volver al taller al instante. */
