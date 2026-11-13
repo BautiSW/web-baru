@@ -2,10 +2,10 @@ import { useEffect, useRef } from 'react'
 
 /**
  * Retrato en ASCII: la foto se arma con caracteres que se prenden y se apagan,
- * y cada tanto se disuelve en la foto real y vuelve. Con el mouse encima, se ve la foto
- * a través de una "lente" y los caracteres de alrededor se desordenan.
+ * y cada pocos segundos se disuelve en la foto real (recortada, sin fondo) y vuelve.
  */
-const SRC = '/foto-contacto-v2.webp'
+const SRC = '/foto-contacto-v3.png'
+const RIM = '/foto-contacto-borde-v1.png'
 const RAMP = ' .:-=+*%#@'
 const COLS = 64
 const CREAM = [242, 237, 228]
@@ -24,6 +24,8 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
     let visible = true
     const img = new Image()
     img.src = SRC
+    const rim = new Image()
+    rim.src = RIM
     let W = 0
     let H = 0
     let rows = 0
@@ -35,7 +37,6 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
     let flick = new Float32Array(0) // brillo actual de cada celda (titileo)
     let glyph = new Uint8Array(0)
     let atlas: HTMLCanvasElement | null = null
-    const mouse = { x: -1e4, y: -1e4, in: false }
     const t0 = performance.now()
     let ready = false
 
@@ -65,10 +66,11 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
       glyph = new Uint8Array(n)
       for (let i = 0; i < n; i++) {
         const L = px[i * 4] / 255
+        const A = px[i * 4 + 3] / 255
         lum[i] = L
-        // Fondo blanco = vacío; pelo y buzo = denso; cara = trazo fino
-        let d = 1 - L
-        d = d < 0.06 ? 0 : Math.min(1, Math.pow(d, 0.8) * 1.15)
+        // Sin fondo (recorte); pelo y buzo = denso; cara = trazo fino
+        let d = (1 - L) * 0.92 + 0.08
+        d = A < 0.5 ? 0 : Math.min(1, Math.pow(d, 0.8) * 1.15)
         dens[i] = d
         seed[i] = Math.random()
         flick[i] = 1
@@ -102,14 +104,14 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
       return c
     }
 
-    /** Mezcla foto/ASCII en el tiempo: ciclo de 9 s (ASCII 5,5 s → foto 2,5 s → vuelve). */
+    /** Mezcla foto/ASCII en el tiempo: ASCII 2,6 s → se disuelve → foto 2,6 s → vuelve. */
     const phase = (t: number) => {
-      const T = 9
-      const k = t % T
-      if (k < 5.2) return 0
-      if (k < 6.2) return (k - 5.2) / 1.0
-      if (k < 8) return 1
-      return 1 - (k - 8) / 1.0
+      const T = 7
+      const k = (t + 0.4) % T
+      if (k < 2.6) return 0
+      if (k < 3.5) return (k - 2.6) / 0.9
+      if (k < 6.1) return 1
+      return 1 - (k - 6.1) / 0.9
     }
 
     const draw = (now: number) => {
@@ -121,8 +123,12 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
       }
       const t = (now - t0) / 1000
       ctx.clearRect(0, 0, W, H)
-      const P = phase(t)
-      const R = Math.min(W, H) * 0.24
+      const P = t < 2 ? 0 : phase(t)
+      // Bordecito: un halo suave alrededor de la silueta, más visible con la foto
+      if (rim.complete && rim.naturalWidth) {
+        ctx.globalAlpha = (0.18 + 0.32 * P) * Math.min(1, t / 1.6)
+        ctx.drawImage(rim, 0, 0, W, H)
+      }
       // Celdas
       for (let y = 0, i = 0; y < rows; y++) {
         for (let x = 0; x < COLS; x++, i++) {
@@ -133,16 +139,7 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
           const on = Math.min(1, Math.max(0, (t - seed[i] * 1.4) / 0.25))
           // Mezcla hacia la foto: barrido diagonal con ruido, para que se "disuelva"
           const order = (x / COLS) * 0.35 + (y / rows) * 0.45 + seed[i] * 0.2
-          let m = Math.min(1, Math.max(0, (P * 1.6 - order) / 0.6))
-          // Lente del mouse: muestra la foto alrededor del cursor
-          let scramble = 0
-          if (mouse.in) {
-            const dx = cx + cw / 2 - mouse.x
-            const dy = cy + ch / 2 - mouse.y
-            const dist = Math.sqrt(dx * dx + dy * dy)
-            if (dist < R) m = Math.max(m, Math.min(1, ((R - dist) / R) * 2.2))
-            else if (dist < R * 1.6) scramble = 1 - (dist - R) / (R * 0.6)
-          }
+          const m = Math.min(1, Math.max(0, (P * 1.6 - order) / 0.6))
           if (m > 0.001) {
             ctx.globalAlpha = m * on
             const sw = img.naturalWidth / COLS
@@ -153,9 +150,8 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
           // Titileo: algunas celdas se apagan un instante y vuelven
           if (Math.random() < 0.004) flick[i] = 0.1
           flick[i] += (1 - flick[i]) * 0.08
-          let gi = glyph[i]
-          if (scramble > 0 && Math.random() < scramble * 0.5) gi = 1 + Math.floor(Math.random() * (RAMP.length - 1))
-          else if (Math.random() < 0.0015) glyph[i] = Math.max(1, Math.min(RAMP.length - 1, gi + (Math.random() < 0.5 ? -1 : 1)))
+          const gi = glyph[i]
+          if (Math.random() < 0.0015) glyph[i] = Math.max(1, Math.min(RAMP.length - 1, gi + (Math.random() < 0.5 ? -1 : 1)))
           const a = (0.35 + 0.65 * d) * flick[i] * on * (1 - m)
           if (a < 0.02) continue
           ctx.globalAlpha = a
@@ -185,20 +181,6 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
       kick()
     })
     io.observe(el)
-    const move = (e: PointerEvent) => {
-      const r = canvas.getBoundingClientRect()
-      const s = W / r.width
-      mouse.x = (e.clientX - r.left) * s
-      mouse.y = (e.clientY - r.top) * s
-      mouse.in = true
-    }
-    const leave = () => {
-      mouse.in = false
-    }
-    canvas.addEventListener('pointermove', move)
-    canvas.addEventListener('pointerdown', move)
-    canvas.addEventListener('pointerleave', leave)
-    canvas.addEventListener('pointerup', (e) => e.pointerType !== 'mouse' && leave())
     return () => {
       alive = false
       cancelAnimationFrame(raf)
@@ -208,8 +190,8 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
   }, [])
 
   return (
-    <div ref={wrap} className={`relative aspect-[620/660] ${className}`}>
-      <canvas ref={cv} className="absolute inset-0 h-full w-full touch-none" aria-label="Retrato de Bautista Suárez" role="img" />
+    <div ref={wrap} className={`relative aspect-[620/660] [mask-image:linear-gradient(to_bottom,black_78%,transparent)] ${className}`}>
+      <canvas ref={cv} className="pointer-events-none absolute inset-0 h-full w-full" aria-label="Retrato de Bautista Suárez" role="img" />
     </div>
   )
 }

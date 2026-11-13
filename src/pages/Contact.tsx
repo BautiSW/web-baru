@@ -90,30 +90,28 @@ export function Contact() {
       <section className="grid min-h-[calc(100svh-15rem)] items-center gap-14 pb-10 lg:grid-cols-[1fr_1.05fr] lg:gap-20">
         {/* Izquierda: foto, título y contacto directo */}
         <div>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.4 }}>
-            <AsciiPortrait className="w-56 sm:w-64 lg:w-[250px]" />
-            <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-cream/35">
-              <span className="hidden sm:inline">Pasá el mouse</span>
-              <span className="sm:hidden">Tocá la foto</span>
-            </p>
-          </motion.div>
-
-          <motion.p
-            className="mt-6 font-mono text-[11px] uppercase tracking-[0.24em] text-cream/50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-          >
-            Contacto
-          </motion.p>
-          <h1 className="display mt-2 text-6xl sm:text-7xl xl:text-8xl">
-            <TypedTitle text="Hablemos." delay={0.8} />
-          </h1>
-          <motion.p className="mt-6 max-w-md text-lg text-cream/70" {...fadeUp(1.5)}>
+          {/* Retrato centrado sobre el título */}
+          <div className="flex w-fit flex-col items-center">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.4 }}>
+              <AsciiPortrait className="w-60 sm:w-72 lg:w-[300px]" />
+            </motion.div>
+            <motion.p
+              className="mt-5 font-mono text-[11px] uppercase tracking-[0.24em] text-cream/50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+            >
+              Contacto
+            </motion.p>
+            <h1 className="display mt-1 text-6xl sm:text-7xl xl:text-8xl">
+              <TypedTitle text="Hablemos." delay={0.8} />
+            </h1>
+          </div>
+          <motion.p className="mt-5 max-w-md text-lg text-cream/70" {...fadeUp(1.5)}>
             ¿Una idea, un proyecto o una propuesta? Escribime y lo charlamos.
           </motion.p>
 
-          <motion.div className="mt-8" {...fadeUp(1.75)}>
+          <motion.div className="mt-6" {...fadeUp(1.75)}>
             <p className="text-sm text-cream/45">O directo a</p>
             <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-3">
               <a
@@ -131,6 +129,15 @@ export function Contact() {
                 className="group inline-flex items-center gap-1.5 font-semibold text-cream transition-colors hover:text-warm"
               >
                 LinkedIn
+                <ArrowUpRight className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </a>
+              <a
+                href={site.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-1.5 font-semibold text-cream transition-colors hover:text-warm"
+              >
+                Instagram
                 <ArrowUpRight className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </a>
               <a
