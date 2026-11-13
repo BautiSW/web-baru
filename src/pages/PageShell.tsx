@@ -10,17 +10,19 @@ interface Props {
   hero?: React.ReactNode
   /** Retraso (s) para mostrar el botón de volver y el eyebrow, cuando la página tiene su propia intro. */
   chromeDelay?: number
+  /** Página de una sola pantalla: en compu no se puede scrollear */
+  fixed?: boolean
   children: React.ReactNode
 }
 
-export function PageShell({ eyebrow, sceneFocus, hero, chromeDelay = 0, children }: Props) {
+export function PageShell({ eyebrow, sceneFocus, hero, chromeDelay = 0, fixed = false, children }: Props) {
   return (
     <motion.main
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.6 }}
-      className="relative min-h-screen bg-ink"
+      className={`relative min-h-screen bg-ink ${fixed ? 'lg:overflow-x-hidden' : ''}`}
     >
       {hero}
       {!hero && sceneFocus && (
@@ -40,7 +42,7 @@ export function PageShell({ eyebrow, sceneFocus, hero, chromeDelay = 0, children
 
       <div className="pointer-events-none fixed inset-x-0 top-0 z-30 h-24 bg-gradient-to-b from-ink to-transparent" />
 
-      <div className="relative mx-auto max-w-6xl px-5 pb-40 pt-28 sm:px-8 sm:pt-32">
+      <div className={`relative mx-auto max-w-6xl px-5 pt-28 sm:px-8 sm:pt-32 ${fixed ? 'pb-40 lg:pb-0' : 'pb-40'}`}>
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

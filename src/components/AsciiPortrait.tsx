@@ -4,8 +4,7 @@ import { useEffect, useRef } from 'react'
  * Retrato en ASCII: la foto se arma con caracteres que se prenden y se apagan,
  * y cada pocos segundos se disuelve en la foto real (recortada, sin fondo) y vuelve.
  */
-const SRC = '/foto-contacto-v3.png'
-const RIM = '/foto-contacto-borde-v1.png'
+const SRC = '/foto-contacto-v4.png'
 const RAMP = ' .:-=+*%#@'
 const COLS = 64
 const CREAM = [242, 237, 228]
@@ -24,8 +23,6 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
     let visible = true
     const img = new Image()
     img.src = SRC
-    const rim = new Image()
-    rim.src = RIM
     let W = 0
     let H = 0
     let rows = 0
@@ -124,11 +121,6 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
       const t = (now - t0) / 1000
       ctx.clearRect(0, 0, W, H)
       const P = t < 2 ? 0 : phase(t)
-      // Bordecito: un halo suave alrededor de la silueta, más visible con la foto
-      if (rim.complete && rim.naturalWidth) {
-        ctx.globalAlpha = (0.18 + 0.32 * P) * Math.min(1, t / 1.6)
-        ctx.drawImage(rim, 0, 0, W, H)
-      }
       // Celdas
       for (let y = 0, i = 0; y < rows; y++) {
         for (let x = 0; x < COLS; x++, i++) {

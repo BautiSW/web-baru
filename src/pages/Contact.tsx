@@ -86,14 +86,14 @@ export function Contact() {
   }
 
   return (
-    <PageShell eyebrow="" hero={<AtlasHero figure={false} />} chromeDelay={1.4}>
-      <section className="grid min-h-[calc(100svh-15rem)] items-center gap-14 pb-10 lg:grid-cols-[1fr_1.05fr] lg:gap-20">
+    <PageShell eyebrow="" hero={<AtlasHero figure={false} />} chromeDelay={1.4} fixed>
+      <section className="grid min-h-[calc(100svh-15rem)] items-center gap-14 pb-10 lg:min-h-0 lg:pb-0 lg:grid-cols-[1fr_1.05fr] lg:gap-20">
         {/* Izquierda: foto, título y contacto directo */}
         <div>
           {/* Retrato centrado sobre el título */}
           <div className="flex w-fit flex-col items-center">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.4 }}>
-              <AsciiPortrait className="w-60 sm:w-72 lg:w-[300px]" />
+              <AsciiPortrait className="w-60 sm:w-72 lg:w-[min(300px,calc((100svh-480px)*0.94))]" />
             </motion.div>
             <motion.p
               className="mt-5 font-mono text-[11px] uppercase tracking-[0.24em] text-cream/50"
