@@ -40,7 +40,7 @@ export function Dock({ route }: { route: Route }) {
 
   const renderItem = (item: Item) => {
     const active = item.kind === 'route' && item.route === route
-    const cls = `relative flex size-10 items-center justify-center rounded-xl transition-colors duration-200 sm:size-11 ${
+    const cls = `relative flex size-10 items-center justify-center rounded-xl transition-[background-color,color,transform] duration-200 ease-out hover:scale-[1.14] active:scale-95 sm:size-11 ${
       active ? 'bg-white/14 text-cream' : 'text-cream/60 hover:bg-white/8 hover:text-cream'
     }`
     const events = {

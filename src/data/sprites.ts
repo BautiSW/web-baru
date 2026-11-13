@@ -1,40 +1,9 @@
-import type { Sheet } from '@/components/SpriteAnimation'
+import type { Clip } from '@/components/VideoSprite'
 
-/** Capó del Volvo abriéndose (video de Veo, alineado a la escena). */
-export const capoSheet: Sheet = {
-  src: '/scene/capo-anim-v3.webp',
-  frames: 29,
-  cols: 6,
-  cw: 486,
-  ch: 381,
-  x: 160.49,
-  y: 86.91,
-  w: 568.28,
-  h: 446.04,
-}
-
-/** El termo ceba un mate y sale vapor (video de Veo, alineado a la escena). */
-export const mateSheet: Sheet = {
-  src: '/scene/mate-anim-v2.webp',
-  frames: 35,
-  cols: 7,
-  cw: 459,
-  ch: 549,
-  x: 961.33,
-  y: 77.07,
-  w: 501.13,
-  h: 600.19,
-}
-
-/** Se levanta y da vuelta la hoja de la carpeta (video de Veo, alineado a la escena). */
-export const hojaSheet: Sheet = {
-  src: '/scene/hoja-anim-v2.webp',
-  frames: 25,
-  cols: 7,
-  cw: 378,
-  ch: 350,
-  x: 956.41,
-  y: 555.91,
-  w: 412.7,
-  h: 382.09,
-}
+/**
+ * Animaciones de hover (videos con alfa apilado). Coordenadas en la escena (1677 x 938).
+ * Generadas con scratchpad/tools/anim2.py: máscara por cuadro, así solo se ve lo que se mueve.
+ */
+export const capoClip: Clip = { src: '/scene/capo-v4', x: 180, y: 97.14, w: 552.86, h: 452.86, pw: 774, ph: 634, frames: 27, fps: 24 }
+export const mateClip: Clip = { src: '/scene/mate-v3', x: 954.29, y: 93.57, w: 515.71, h: 595.71, pw: 722, ph: 834, frames: 96, fps: 28 }
+export const hojaClip: Clip = { src: '/scene/hoja-v3', x: 1015.71, y: 520, w: 302.86, h: 385.71, pw: 424, ph: 540, frames: 45, fps: 24 }
