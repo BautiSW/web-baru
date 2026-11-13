@@ -16,7 +16,7 @@ export const loadAtlas = () => (atlasData ??= fetch('/hero-atlas.json').then((r)
 
 const CREAM = '242,237,228'
 
-export function AtlasHero() {
+export function AtlasHero({ figure = true }: { figure?: boolean }) {
   const wrap = useRef<HTMLDivElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
 
@@ -122,7 +122,7 @@ export function AtlasHero() {
       if (!raf && alive && visible) raf = requestAnimationFrame(draw)
     }
 
-    loadAtlas().then((d) => {
+    if (figure) loadAtlas().then((d) => {
       if (!alive) return
       data = d
       const n = d.p.length / 4
@@ -168,10 +168,10 @@ export function AtlasHero() {
     <div ref={wrap} className="pointer-events-none absolute inset-x-0 top-0 h-screen overflow-hidden bg-black">
       <canvas ref={canvas} className="absolute inset-0" aria-hidden="true" />
       <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-b from-transparent to-ink" />
-      <div className="absolute left-4 top-20 size-8 border-l border-t border-white/25 sm:left-6 sm:size-12" />
-      <div className="absolute right-4 top-20 size-8 border-r border-t border-white/25 sm:right-6 sm:size-12" />
-      <div className="absolute bottom-[12vh] left-4 size-8 border-b border-l border-white/25 sm:left-6 sm:size-12" />
-      <div className="absolute bottom-[12vh] right-4 size-8 border-b border-r border-white/25 sm:right-6 sm:size-12" />
+      <div className="absolute left-4 top-20 hidden size-8 border-l border-t sm:block border-white/25 sm:left-6 sm:size-12" />
+      <div className="absolute right-4 top-20 hidden size-8 border-r border-t sm:block border-white/25 sm:right-6 sm:size-12" />
+      <div className="absolute bottom-[12vh] left-4 hidden size-8 sm:block border-b border-l border-white/25 sm:left-6 sm:size-12" />
+      <div className="absolute bottom-[12vh] right-4 hidden size-8 sm:block border-b border-r border-white/25 sm:right-6 sm:size-12" />
     </div>
   )
 }

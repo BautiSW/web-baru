@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { animate, motion, useMotionValue, useSpring } from 'motion/react'
 import { hotspots, SCENE_H, SCENE_W, type Hotspot } from '@/data/hotspots'
 import { VideoSprite } from './VideoSprite'
-import { capoClip, hojaClip, mateClip } from '@/data/sprites'
+import { PaperSheet } from './PaperSheet'
+import { capoClip, mateClip } from '@/data/sprites'
 import type { Route } from '@/lib/router'
 
 function useMedia(query: string) {
@@ -28,7 +29,7 @@ const OFF_SRC = window.matchMedia('(max-width: 900px)').matches ? '/scene/taller
 setTimeout(() => {
   const im = new Image()
   im.src = OFF_SRC
-  new Image().src = '/scene/capo-cutmask-v3.png'
+  new Image().src = '/scene/capo-cutmask-v4.png'
   // Precarga la escena ASCII de Under the hood cuando el home ya está tranquilo
   setTimeout(() => {
     const load = () => fetch('/hero-atlas.json').catch(() => undefined)
@@ -307,7 +308,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
           {/* Mate: el termo ceba y sale vapor (zona Work) */}
           <VideoSprite clip={mateClip} active={hovered === workIndex} mode="once" loadDelay={400} />
           {/* Carpeta: se levanta y da vuelta la hoja (zona Contacto) */}
-          <VideoSprite clip={hojaClip} active={hovered === contactIndex} mode="once" loadDelay={1500} />
+          <PaperSheet active={hovered === contactIndex} />
           </motion.div>
 
           {/* El apagado también va arriba de las animaciones (si no, el neón queda prendido en los cuadros
@@ -511,7 +512,7 @@ function OffLayer({ clipCar = false }: { clipCar?: boolean }) {
             {/* Máscara: todo apagado menos el capó abierto y el motor (sacada de los cuadros del capó) */}
             <mask id={id} maskUnits="userSpaceOnUse" x={0} y={0} width={SCENE_W} height={SCENE_H}>
               <rect width={SCENE_W} height={SCENE_H} fill="#fff" />
-              <image href="/scene/capo-cutmask-v3.png" x={capoClip.x} y={capoClip.y} width={capoClip.w} height={capoClip.h} preserveAspectRatio="none" />
+              <image href="/scene/capo-cutmask-v4.png" x={capoClip.x} y={capoClip.y} width={capoClip.w} height={capoClip.h} preserveAspectRatio="none" />
             </mask>
           </defs>
         )}

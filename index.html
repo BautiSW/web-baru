@@ -13,6 +13,10 @@
     <meta name="description" content="Bautista Suárez — Emprendedor y builder de IA. Cofundador de Retruco Agency, creador de wAise y GoStudy!." />
   </head>
   <body>
+    <!-- Formulario para que Netlify lo detecte (el de verdad está en la página Contacto) -->
+    <form name="contacto" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="text" name="nombre" /><input type="email" name="email" /><textarea name="mensaje"></textarea><input name="bot-field" />
+    </form>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
