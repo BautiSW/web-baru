@@ -4,6 +4,7 @@ import { ArrowUpRight, Check, FileDown, Send } from 'lucide-react'
 import { PageShell } from './PageShell'
 import { AtlasHero } from '@/components/AtlasHero'
 import { site } from '@/data/site'
+import { AsciiPortrait } from '@/components/AsciiPortrait'
 
 /** Título que aparece letra por letra en la oscuridad (igual que en Under the hood). */
 function TypedTitle({ text, delay = 0 }: { text: string; delay?: number }) {
@@ -89,31 +90,30 @@ export function Contact() {
       <section className="grid min-h-[calc(100svh-15rem)] items-center gap-14 pb-10 lg:grid-cols-[1fr_1.05fr] lg:gap-20">
         {/* Izquierda: foto, título y contacto directo */}
         <div>
-          <motion.div
-            className="w-36 overflow-hidden rounded-2xl sm:w-48 lg:w-56"
-            initial={{ opacity: 0, scale: 0.94, filter: 'brightness(0)' }}
-            animate={{ opacity: 1, scale: 1, filter: 'brightness(1)' }}
-            transition={{ delay: 0.3, duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <img src="/foto-contacto-v1.webp" alt="Bautista Suárez" className="aspect-[600/636] w-full object-cover" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.4 }}>
+            <AsciiPortrait className="w-56 sm:w-64 lg:w-[250px]" />
+            <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-cream/35">
+              <span className="hidden sm:inline">Pasá el mouse</span>
+              <span className="sm:hidden">Tocá la foto</span>
+            </p>
           </motion.div>
 
           <motion.p
-            className="mt-10 font-mono text-[11px] uppercase tracking-[0.24em] text-cream/50"
+            className="mt-6 font-mono text-[11px] uppercase tracking-[0.24em] text-cream/50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.6 }}
           >
             Contacto
           </motion.p>
-          <h1 className="display mt-3 text-6xl sm:text-8xl">
+          <h1 className="display mt-2 text-6xl sm:text-7xl xl:text-8xl">
             <TypedTitle text="Hablemos." delay={0.8} />
           </h1>
           <motion.p className="mt-6 max-w-md text-lg text-cream/70" {...fadeUp(1.5)}>
             ¿Una idea, un proyecto o una propuesta? Escribime y lo charlamos.
           </motion.p>
 
-          <motion.div className="mt-10" {...fadeUp(1.75)}>
+          <motion.div className="mt-8" {...fadeUp(1.75)}>
             <p className="text-sm text-cream/45">O directo a</p>
             <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-3">
               <a
