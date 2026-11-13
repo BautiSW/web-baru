@@ -1,24 +1,40 @@
 export interface ToolItem {
   name: string
-  category: 'ia' | 'software'
+  /** Archivo en /public/logos */
+  logo: string
 }
 
-export const tools: ToolItem[] = [
-  { name: 'Claude', category: 'ia' },
-  { name: 'Claude Code', category: 'ia' },
-  { name: 'ChatGPT', category: 'ia' },
-  { name: 'Gemini', category: 'ia' },
-  { name: 'Midjourney', category: 'ia' },
-  { name: 'GitHub Copilot', category: 'ia' },
-  { name: 'Base44', category: 'ia' },
-  { name: 'n8n', category: 'ia' },
-  { name: 'Excel', category: 'software' },
-  { name: 'Google Suite', category: 'software' },
-  { name: 'Microsoft Office', category: 'software' },
-  { name: 'Visual Studio', category: 'software' },
-  { name: 'After Effects', category: 'software' },
-  { name: 'Premiere Pro', category: 'software' },
-  { name: 'Blender 3D', category: 'software' },
+export interface ToolGroup {
+  title: string
+  items: ToolItem[]
+}
+
+const t = (name: string, logo: string): ToolItem => ({ name, logo })
+
+export const toolGroups: ToolGroup[] = [
+  {
+    title: 'IA',
+    items: [
+      t('Claude / Claude Code', 'claude'),
+      t('ChatGPT', 'chatgpt'),
+      t('Gemini', 'gemini'),
+      t('Midjourney', 'midjourney'),
+      t('Higgsfield', 'higgsfield'),
+      t('Base44', 'base44'),
+    ],
+  },
+  {
+    title: 'Diseño y video',
+    items: [t('After Effects', 'aftereffects'), t('Premiere Pro', 'premiere'), t('CapCut', 'capcut'), t('Blender', 'blender')],
+  },
+  {
+    title: 'Desarrollo y productividad',
+    items: [t('VS Code', 'vscode'), t('GitHub', 'github'), t('Vercel', 'vercel'), t('Supabase', 'supabase'), t('n8n', 'n8n'), t('Obsidian', 'obsidian')],
+  },
+  {
+    title: 'Google Suite y Excel',
+    items: [t('Excel', 'excel'), t('Gmail', 'gmail'), t('Google Calendar', 'gcalendar'), t('Google Drive', 'gdrive'), t('Google Meet', 'gmeet')],
+  },
 ]
 
 export interface Language {

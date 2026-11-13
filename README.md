@@ -52,15 +52,19 @@ npm run preview
    - Publish directory: `dist`
 4. Cada push a la rama principal va a disparar un nuevo deploy automático.
 
+## Cómo está armada (v2 — "el taller")
+
+- **Home**: `src/components/Scene.tsx`. Imagen del taller (`public/scene/taller.webp`) con zonas cliqueables encima. Hover = foco sobre el objeto + etiqueta; click = zoom de cámara hacia el objeto y entra a la sección.
+- **Zonas cliqueables**: `src/data/hotspots.ts`. Son polígonos en coordenadas de la imagen original (1677 x 938). Si cambiás la imagen, hay que reajustarlos.
+- **HUD**: `src/components/Hud.tsx` (nombre + rol rotativo arriba a la izquierda, fecha y hora arriba a la derecha) y `src/components/Dock.tsx` (barra de abajo).
+- **Secciones**: `src/pages/` → `About.tsx` (Mi historia), `Work.tsx` (proyectos), `Garage.tsx` (Under the hood), `Contact.tsx`.
+- **Rutas**: por hash (`#/about`, `#/work`, `#/garage`, `#/contact`) en `src/lib/router.ts`.
+
 ## Editar contenido
 
 - **Proyectos**: `src/data/projects.ts`
 - **Recorrido**: `src/data/timeline.ts`
 - **Herramientas e idiomas**: `src/data/tools.ts`
 - **Conversaciones de "Cómo uso la IA"**: `src/data/ai-chats.ts`
+- **Links, mail y roles del HUD**: `src/data/site.ts`
 - **CV**: reemplazá `public/cv.pdf` por tu archivo actualizado (mismo nombre).
-- **Foto de "Sobre mí"**: hoy es un placeholder con las iniciales "BS" en `src/components/About.tsx` — buscá el comentario `[COMPLETAR: foto]`.
-
-## Textos pendientes de revisión
-
-El sitio tiene varios textos con humor marcados `[REVISAR]` directamente en pantalla (frase del hero, timeline, proyectos, contacto) para que los apruebes o cambies vos. Una vez que estés conforme, buscá `[REVISAR]` en `src/components/` y `src/data/` y sacá la marca.

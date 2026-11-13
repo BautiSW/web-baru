@@ -2,15 +2,21 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" href="/favicon.ico?v=2" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=2" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bauti — Portfolio</title>
-    <meta name="description" content="Bautista Suárez — Emprendedor y builder de IA. Cofundador de SAIBA Studios, creador de wAise y GoStudy!." />
+    <title>Bautista Suárez — Building with AI</title>
+    <meta name="theme-color" content="#0a0a0a" />
+
+    <meta name="description" content="Bautista Suárez — Emprendedor y builder de IA. Cofundador de Retruco Agency, creador de wAise y GoStudy!." />
   </head>
   <body>
+    <!-- Formulario para que Netlify lo detecte (el de verdad está en la página Contacto) -->
+    <form name="contacto" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="text" name="nombre" /><input type="email" name="email" /><textarea name="mensaje"></textarea><input name="bot-field" />
+    </form>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
