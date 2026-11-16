@@ -68,12 +68,12 @@ const chapters: Chapter[] = [
 ]
 
 const offScreen: { title: string; text: string; photos: string[]; span: string }[] = [
-  { title: 'Viajes', text: 'Conocer lugares nuevos, siempre que se pueda.', photos: ['hawaii', 'nieve', 'vaticano'], span: 'sm:col-span-2 md:col-span-2 md:row-span-2' },
-  { title: 'Fútbol', text: 'Juego desde que me acuerdo. Hincha de Racing.', photos: ['futbol-chico'], span: 'sm:col-span-2 md:col-span-2' },
+  { title: 'Viajes', text: 'Conocer lugares nuevos, siempre que se pueda.', photos: ['hawaii', 'griffith', 'nieve', 'surf', 'vaticano'], span: 'sm:col-span-2 md:col-span-2 md:row-span-2' },
+  { title: 'Fútbol', text: 'Juego desde que me acuerdo. Hincha de Racing.', photos: ['futbol-noche', 'futbol-playa', 'futbol-chico'], span: 'sm:col-span-2 md:col-span-2' },
   { title: 'Rugby', text: "Lo jugué en St. Luke's: ahí aprendí a jugar para el equipo.", photos: ['rugby'], span: '' },
-  { title: 'Piano', text: 'Me enamoré del piano desde el día que lo conocí.', photos: ['piano'], span: 'md:row-span-2' },
+  { title: 'Piano', text: 'Me enamoré del piano desde el día que lo conocí.', photos: ['piano', 'piano-geissler'], span: 'md:row-span-2' },
   { title: 'Golf', text: 'Me encanta. Siempre que puedo, a la cancha.', photos: ['golf', 'golf-range'], span: '' },
-  { title: 'Autos clásicos', text: 'Apasionado de los autos clásicos desde siempre.', photos: ['volvo', 'auto-23', 'gran-turismo'], span: 'sm:col-span-2 md:col-span-2' },
+  { title: 'Autos clásicos', text: 'Apasionado de los autos clásicos desde siempre.', photos: ['volvo', 'autos-amarillos', 'volvo-motor', 'auto-23', 'gran-turismo'], span: 'sm:col-span-2 md:col-span-2' },
 ]
 
 /** Tarjeta que va pasando sus fotos con un fundido suave. */
