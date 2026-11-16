@@ -22,7 +22,7 @@ const chapters: Chapter[] = [
     year: '2006',
     kicker: 'El arranque',
     title: 'Buenos Aires',
-    text: 'Nací en Buenos Aires. De chico, siempre afuera: el río, la pelota y los autos clásicos de mi viejo.',
+    text: 'Nací en Buenos Aires. De chico, el fútbol y los amigos ocupaban casi todo: siempre había un partido o un plan.',
     photos: ['chico-rio'],
   },
   {
@@ -38,7 +38,7 @@ const chapters: Chapter[] = [
     kicker: 'El primer código',
     title: 'Coderhouse',
     text: 'Mi primer curso de desarrollo web: HTML, CSS, JavaScript y UX. Las bases que hoy uso para dirigir a la IA cuando construyo.',
-    photos: [],
+    photos: ['programando'],
     logo: 'coderhouse.png',
   },
   {
@@ -46,7 +46,7 @@ const chapters: Chapter[] = [
     kicker: 'Un desvío',
     title: 'ITBA',
     text: 'Un semestre de Ingeniería Industrial que sirvió para confirmar hacia dónde quería ir: los negocios y crear productos.',
-    photos: ['itba'],
+    photos: ['itba', 'itba-domo'],
     logo: 'itba.png',
   },
   {
@@ -54,7 +54,7 @@ const chapters: Chapter[] = [
     kicker: 'El rumbo',
     title: 'Di Tella',
     text: 'Administración de Empresas en la Universidad Torcuato Di Tella, con la idea de especializarme en Marketing.',
-    photos: ['ditella-auto'],
+    photos: ['ditella-terraza', 'ditella-auto'],
     logo: 'ditella.png',
   },
   {
@@ -62,42 +62,24 @@ const chapters: Chapter[] = [
     kicker: 'Construyendo',
     title: 'Ideas que andan',
     text: 'GoStudy, wAise y ahora Retruco Agency con mi socio. Noches de código con la IA de copiloto. En 2026, la certificación AI Fluency de Anthropic.',
-    photos: ['programando'],
-    logo: 'anthropic.png',
+    photos: [],
+    logo: 'retruco.png',
   },
 ]
 
-const offScreen = [
-  { title: 'Fútbol', text: 'Juego desde que me acuerdo. Hincha de Racing.', photo: 'futbol-chico', span: 'md:col-span-2' },
-  { title: 'Rugby', text: "Lo jugué en St. Luke's: ahí aprendí a jugar para el equipo.", photo: 'rugby', span: '' },
-  { title: 'Piano', text: 'Clases y un piano de estudio en casa.', photo: 'piano', span: 'md:row-span-2' },
-  { title: 'Golf', text: 'Lo arranqué este año.', photo: 'golf', span: '' },
-  { title: 'Autos clásicos', text: 'El Volvo del taller es real: un proyecto con mi viejo.', photo: 'auto-23', span: 'md:col-span-2' },
-  { title: 'Viajes', text: 'De la nieve al Vaticano.', photo: 'nieve', span: 'md:col-span-2' },
-  { title: '', text: '', photo: 'vaticano', span: 'md:col-span-2' },
+const offScreen: { title: string; text: string; photos: string[]; span: string }[] = [
+  { title: 'Fútbol', text: 'Juego desde que me acuerdo. Hincha de Racing.', photos: ['futbol-chico'], span: 'md:col-span-2' },
+  { title: 'Rugby', text: "Lo jugué en St. Luke's: ahí aprendí a jugar para el equipo.", photos: ['rugby'], span: '' },
+  { title: 'Piano', text: 'Clases y un piano de estudio en casa.', photos: ['piano'], span: 'md:row-span-2' },
+  { title: 'Golf', text: 'Me encanta. Siempre que puedo, a la cancha.', photos: ['golf'], span: '' },
+  { title: 'Autos clásicos', text: 'Apasionado de los autos clásicos desde siempre.', photos: ['volvo'], span: 'md:col-span-2' },
+  { title: '', text: 'De la nieve al Vaticano.', photos: ['nieve', 'vaticano', 'hawaii'], span: 'sm:col-span-2 md:col-span-4' },
 ]
 
 const img = (name: string) => `/historia/${name}.webp`
 
 /* ───────────── Piezas ───────────── */
 
-function TypedTitle({ text, delay = 0 }: { text: string; delay?: number }) {
-  return (
-    <span aria-label={text}>
-      {text.split('').map((ch, i) => (
-        <motion.span
-          key={i}
-          aria-hidden="true"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: delay + i * 0.05, duration: 0.05 }}
-        >
-          {ch}
-        </motion.span>
-      ))}
-    </span>
-  )
-}
 
 /** Fotos del capítulo: una grande y las demás encima, como fotos sueltas sobre la mesa. */
 function Photos({ ch, drift }: { ch: Chapter; drift?: MotionValue<number> }) {
@@ -251,18 +233,46 @@ export function About() {
         >
           Mi historia
         </motion.p>
-        <h1 className="display mt-3 text-6xl sm:text-8xl lg:text-[8.5rem]">
-          <TypedTitle text="De dónde vengo." delay={0.7} />
-        </h1>
+        <div className="mt-6 flex flex-col items-center gap-5 md:flex-row md:gap-8">
+          <motion.h1
+            initial={{ opacity: 0, x: -40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.9, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="display text-[clamp(3rem,7vw,7.5rem)]"
+          >
+            Business
+          </motion.h1>
+          <motion.img
+            src="/images/bauti-bn.webp"
+            alt="Bautista Suárez"
+            initial={{ opacity: 0, scale: 0.9, filter: 'brightness(0)' }}
+            animate={{ opacity: 1, scale: 1, filter: 'brightness(1)' }}
+            transition={{ duration: 1.2, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="w-40 rounded-2xl object-cover sm:w-48 lg:w-56"
+            style={{ aspectRatio: '3 / 4' }}
+          />
+          <motion.h1
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.9, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="display text-[clamp(3rem,7vw,7.5rem)]"
+          >
+            Builder
+          </motion.h1>
+        </div>
         <motion.p
-          className="mx-auto mt-6 max-w-xl text-lg text-cream/65"
+          className="mx-auto mt-10 max-w-xl text-lg text-cream/65"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.7, duration: 0.8 }}
+          transition={{ delay: 1.5, duration: 0.8 }}
         >
           Tengo 20 años, vivo en Buenos Aires y estudio Administración de Empresas en Di Tella. Emprendo desde chico.
         </motion.p>
       </section>
+
+      <Reveal className="mt-24 text-center">
+        <h2 className="display text-5xl sm:text-7xl">De dónde vengo.</h2>
+      </Reveal>
 
       <HorizontalTimeline />
       <VerticalTimeline />
@@ -274,19 +284,25 @@ export function About() {
         </Reveal>
         <div className="grid grid-flow-row-dense auto-rows-[220px] grid-cols-1 gap-3 sm:grid-cols-2 md:auto-rows-[240px] md:grid-cols-4">
           {offScreen.map((o, i) => (
-            <Reveal key={o.photo} delay={(i % 4) * 0.06} className={`group relative overflow-hidden rounded-2xl border border-white/10 ${o.span}`}>
-              <img
-                src={img(o.photo)}
-                alt={o.title}
-                loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
-              />
-              {o.title && (
+            <Reveal key={o.photos[0]} delay={(i % 4) * 0.06} className={`group relative overflow-hidden rounded-2xl border border-white/10 ${o.span}`}>
+              <div className="absolute inset-0 flex gap-px">
+                {o.photos.map((ph) => (
+                  <div key={ph} className="relative h-full flex-1 overflow-hidden">
+                    <img
+                      src={img(ph)}
+                      alt={o.title || o.text}
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+                    />
+                  </div>
+                ))}
+              </div>
+              {(o.title || o.text) && (
                 <>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-5">
-                    <h3 className="font-display text-2xl font-bold">{o.title}</h3>
-                    <p className="mt-1 text-sm text-cream/70">{o.text}</p>
+                    {o.title && <h3 className="font-display text-2xl font-bold">{o.title}</h3>}
+                    <p className={o.title ? 'mt-1 text-sm text-cream/70' : 'font-display text-2xl font-bold'}>{o.text}</p>
                   </div>
                 </>
               )}
