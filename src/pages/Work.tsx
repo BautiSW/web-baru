@@ -121,7 +121,7 @@ export function Work() {
   const [sheet, setSheet] = useState<Project | null>(null)
 
   return (
-    <PageShell eyebrow="" hero={<AtlasHero figure={false} />} chromeDelay={1.4}>
+    <PageShell eyebrow="" hero={<AtlasHero figure={false} full />} chromeDelay={1.4}>
       <section className="text-center">
         <motion.p
           className="font-mono text-[11px] uppercase tracking-[0.24em] text-cream/50"
@@ -134,26 +134,9 @@ export function Work() {
         <h1 className="display mt-3 text-6xl sm:text-8xl">
           <TypedTitle text="Lo que construí." delay={0.7} />
         </h1>
-        <motion.p
-          className="mx-auto mt-6 max-w-lg text-lg text-cream/70"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.6, duration: 0.8 }}
-        >
-          Cuatro proyectos, cuatro carpetas. Abrí una y mirá qué hay adentro.
-        </motion.p>
-        <motion.p
-          className="mt-4 font-mono text-[10px] uppercase tracking-[0.22em] text-cream/35"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2, duration: 0.6 }}
-        >
-          <span className="hidden sm:inline">Pasá el mouse · Tocá para abrir</span>
-          <span className="sm:hidden">Tocá una carpeta para abrirla</span>
-        </motion.p>
       </section>
 
-      <section className="mx-auto mt-16 grid max-w-[820px] grid-cols-1 justify-items-center gap-x-14 gap-y-16 md:grid-cols-2">
+      <section className="mx-auto mt-20 grid max-w-[820px] grid-cols-1 justify-items-center gap-x-14 gap-y-16 md:grid-cols-2">
         {projects.map((p, i) => (
           <GlassFolder
             key={p.title}
