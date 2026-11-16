@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { ArrowUpRight, X } from 'lucide-react'
 import { PageShell } from './PageShell'
 import { AtlasHero } from '@/components/AtlasHero'
+import { CodeRain } from '@/components/CodeRain'
 import GlassFolder, { type FolderFile } from '@/components/ui/glass-folder-cards'
 import { projects, type Project } from '@/data/projects'
 
@@ -122,21 +123,32 @@ export function Work() {
 
   return (
     <PageShell eyebrow="" hero={<AtlasHero figure={false} full />} chromeDelay={1.4}>
-      <section className="text-center">
-        <motion.p
-          className="font-mono text-[11px] uppercase tracking-[0.24em] text-cream/50"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
+      <section className="mx-auto grid max-w-[980px] items-center gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-14">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
         >
-          Work
-        </motion.p>
-        <h1 className="display mt-3 text-6xl sm:text-8xl">
-          <TypedTitle text="Lo que construí." delay={0.7} />
-        </h1>
+          <CodeRain className="w-full" />
+        </motion.div>
+        <div>
+          <motion.p
+            className="font-mono text-[11px] uppercase tracking-[0.24em] text-cream/50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+          >
+            Work
+          </motion.p>
+          <h1 className="display mt-3 text-6xl sm:text-7xl xl:text-8xl">
+            <TypedTitle text="Lo que" delay={0.7} />
+            <br />
+            <TypedTitle text="construí." delay={1.05} />
+          </h1>
+        </div>
       </section>
 
-      <section className="mx-auto mt-20 grid max-w-[820px] grid-cols-1 justify-items-center gap-x-14 gap-y-16 md:grid-cols-2">
+      <section className="mx-auto mt-24 grid max-w-[820px] grid-cols-1 justify-items-center gap-x-14 gap-y-16 md:grid-cols-2">
         {projects.map((p, i) => (
           <GlassFolder
             key={p.title}
