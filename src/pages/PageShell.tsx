@@ -22,7 +22,7 @@ export function PageShell({ eyebrow, sceneFocus, hero, chromeDelay = 0, fixed = 
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.6 }}
-      className={`relative min-h-screen bg-ink ${fixed ? 'lg:overflow-x-hidden' : ''}`}
+      className="relative min-h-screen overflow-x-clip bg-ink"
     >
       {hero}
       {!hero && sceneFocus && (
