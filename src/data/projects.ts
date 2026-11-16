@@ -67,7 +67,7 @@ export const projects: Project[] = [
   {
     title: 'Behind the Door',
     role: 'Creador',
-    period: '',
+    period: '2022',
     logo: 'behind-the-door.png',
     initials: 'BD',
     description:
