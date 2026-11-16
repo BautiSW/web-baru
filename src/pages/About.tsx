@@ -99,7 +99,7 @@ function CyclingPhotos({ photos, alt, offset = 0 }: { photos: string[]; alt: str
           src={img(ph)}
           alt={k === i ? alt : ''}
           loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-[1200ms] ease-out group-hover:scale-[1.04]"
+          className="absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-[1200ms] ease-out"
           style={{ opacity: k === i ? 1 : 0 }}
         />
       ))}
@@ -113,6 +113,8 @@ function CyclingPhotos({ photos, alt, offset = 0 }: { photos: string[]; alt: str
     </>
   )
 }
+
+const flags: Record<string, string> = { Español: 'es', Inglés: 'gb', Portugués: 'pt' }
 
 const img = (name: string) => `/historia/${name}.webp`
 
@@ -286,12 +288,12 @@ export function About() {
         >
           Mi historia
         </motion.p>
-        <div className="mt-6 flex w-full flex-col items-center gap-5 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-10">
+        <div className="mt-6 flex w-full flex-col items-center gap-5 md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center md:gap-8">
           <motion.h1
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.9, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="display text-[clamp(3rem,7vw,7.5rem)] md:text-right"
+            className="display whitespace-nowrap text-[clamp(3rem,5vw,6rem)] md:text-right"
           >
             Business
           </motion.h1>
@@ -301,14 +303,14 @@ export function About() {
             initial={{ opacity: 0, scale: 0.9, filter: 'brightness(0)' }}
             animate={{ opacity: 1, scale: 1, filter: 'brightness(1)' }}
             transition={{ duration: 1.2, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="w-48 rounded-2xl object-cover sm:w-56 lg:w-72"
+            className="w-48 max-w-none shrink-0 rounded-2xl object-cover sm:w-56 lg:w-64"
             style={{ aspectRatio: '3 / 4' }}
           />
           <motion.h1
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.9, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="display text-[clamp(3rem,7vw,7.5rem)] md:text-left"
+            className="display whitespace-nowrap text-[clamp(3rem,5vw,6rem)] md:text-left"
           >
             Builder
           </motion.h1>
@@ -358,7 +360,8 @@ export function About() {
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-cream/50">Idiomas</p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             {languages.map((l) => (
-              <div key={l.name} className="rounded-full border border-white/15 px-5 py-2.5">
+              <div key={l.name} className="inline-flex items-center gap-2.5 rounded-full border border-white/15 px-5 py-2.5">
+                <img src={`/flags/${flags[l.name]}.png`} alt="" className="h-4 w-6 rounded-[3px] object-cover" />
                 <span className="font-semibold">{l.name}</span>
                 <span className="ml-2 text-sm text-cream/55">{l.level}</span>
               </div>
