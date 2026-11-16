@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { motion, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react'
 import { ArrowRight } from 'lucide-react'
 import { PageShell, Reveal } from './PageShell'
@@ -60,21 +60,59 @@ const chapters: Chapter[] = [
   {
     year: 'Hoy',
     kicker: 'Construyendo',
-    title: 'Ideas que andan',
-    text: 'GoStudy, wAise y ahora Retruco Agency con mi socio. Noches de código con la IA de copiloto. En 2026, la certificación AI Fluency de Anthropic.',
-    photos: [],
+    title: 'Ideas en proceso',
+    text: 'Hoy, Retruco Agency: con mi socio armamos webs y automatizaciones con IA para pymes. Entre clase y clase, siempre hay algo abierto en la compu.',
+    photos: ['retruco-laptop'],
     logo: 'retruco.png',
   },
 ]
 
 const offScreen: { title: string; text: string; photos: string[]; span: string }[] = [
-  { title: 'Fútbol', text: 'Juego desde que me acuerdo. Hincha de Racing.', photos: ['futbol-chico'], span: 'md:col-span-2' },
+  { title: 'Viajes', text: 'Conocer lugares nuevos, siempre que se pueda.', photos: ['hawaii', 'nieve', 'vaticano'], span: 'sm:col-span-2 md:col-span-2 md:row-span-2' },
+  { title: 'Fútbol', text: 'Juego desde que me acuerdo. Hincha de Racing.', photos: ['futbol-chico'], span: 'sm:col-span-2 md:col-span-2' },
   { title: 'Rugby', text: "Lo jugué en St. Luke's: ahí aprendí a jugar para el equipo.", photos: ['rugby'], span: '' },
-  { title: 'Piano', text: 'Clases y un piano de estudio en casa.', photos: ['piano'], span: 'md:row-span-2' },
-  { title: 'Golf', text: 'Me encanta. Siempre que puedo, a la cancha.', photos: ['golf'], span: '' },
-  { title: 'Autos clásicos', text: 'Apasionado de los autos clásicos desde siempre.', photos: ['volvo'], span: 'md:col-span-2' },
-  { title: '', text: 'De la nieve al Vaticano.', photos: ['nieve', 'vaticano', 'hawaii'], span: 'sm:col-span-2 md:col-span-4' },
+  { title: 'Piano', text: 'Me enamoré del piano desde el día que lo conocí.', photos: ['piano'], span: 'md:row-span-2' },
+  { title: 'Golf', text: 'Me encanta. Siempre que puedo, a la cancha.', photos: ['golf', 'golf-range'], span: '' },
+  { title: 'Autos clásicos', text: 'Apasionado de los autos clásicos desde siempre.', photos: ['volvo', 'auto-23', 'gran-turismo'], span: 'sm:col-span-2 md:col-span-2' },
 ]
+
+/** Tarjeta que va pasando sus fotos con un fundido suave. */
+function CyclingPhotos({ photos, alt, offset = 0 }: { photos: string[]; alt: string; offset?: number }) {
+  const [i, setI] = useState(0)
+  useEffect(() => {
+    if (photos.length < 2) return
+    let id = 0
+    const t = window.setTimeout(() => {
+      setI((v) => (v + 1) % photos.length)
+      id = window.setInterval(() => setI((v) => (v + 1) % photos.length), 3800)
+    }, 3800 + offset)
+    return () => {
+      window.clearTimeout(t)
+      window.clearInterval(id)
+    }
+  }, [photos.length, offset])
+  return (
+    <>
+      {photos.map((ph, k) => (
+        <img
+          key={ph}
+          src={img(ph)}
+          alt={k === i ? alt : ''}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-[1200ms] ease-out group-hover:scale-[1.04]"
+          style={{ opacity: k === i ? 1 : 0 }}
+        />
+      ))}
+      {photos.length > 1 && (
+        <div className="absolute right-4 top-4 flex gap-1.5">
+          {photos.map((ph, k) => (
+            <span key={ph} className={`h-1 rounded-full transition-all duration-500 ${k === i ? 'w-5 bg-cream' : 'w-1.5 bg-cream/40'}`} />
+          ))}
+        </div>
+      )}
+    </>
+  )
+}
 
 const img = (name: string) => `/historia/${name}.webp`
 
@@ -155,6 +193,17 @@ function HorizontalTimeline() {
   }, [])
 
   const { scrollYProgress } = useScroll({ target: section, offset: ['start start', 'end end'] })
+  const jump = (p: number) => {
+    const el = section.current
+    if (!el) return
+    const top = el.getBoundingClientRect().top + window.scrollY
+    window.scrollTo({ top: top + p * dist + 1, behavior: 'smooth' })
+  }
+  const skip = () => {
+    const el = section.current
+    if (!el) return
+    window.scrollTo({ top: el.getBoundingClientRect().bottom + window.scrollY - 40, behavior: 'smooth' })
+  }
   const smooth = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.4 })
   const x = useTransform(smooth, (v) => -v * dist)
   const bar = useTransform(smooth, [0, 1], [0, 1])
@@ -189,10 +238,14 @@ function HorizontalTimeline() {
             <motion.div className="absolute inset-y-0 left-0 w-full origin-left bg-cream/70" style={{ scaleX: bar }} />
           </div>
           <div className="mt-3 flex justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-cream/40">
-            {chapters.map((c) => (
-              <span key={c.title}>{c.year}</span>
+            {chapters.map((c, k) => (
+              <button key={c.title} onClick={() => jump(k / chapters.length)} className="transition-colors hover:text-cream">
+                {c.year}
+              </button>
             ))}
-            <span>→</span>
+            <button onClick={skip} className="text-cream/60 transition-colors hover:text-cream">
+              Saltar →
+            </button>
           </div>
         </div>
       </div>
@@ -233,12 +286,12 @@ export function About() {
         >
           Mi historia
         </motion.p>
-        <div className="mt-6 flex flex-col items-center gap-5 md:flex-row md:gap-8">
+        <div className="mt-6 flex w-full flex-col items-center gap-5 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-10">
           <motion.h1
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.9, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="display text-[clamp(3rem,7vw,7.5rem)]"
+            className="display text-[clamp(3rem,7vw,7.5rem)] md:text-right"
           >
             Business
           </motion.h1>
@@ -248,14 +301,14 @@ export function About() {
             initial={{ opacity: 0, scale: 0.9, filter: 'brightness(0)' }}
             animate={{ opacity: 1, scale: 1, filter: 'brightness(1)' }}
             transition={{ duration: 1.2, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="w-40 rounded-2xl object-cover sm:w-48 lg:w-56"
+            className="w-48 rounded-2xl object-cover sm:w-56 lg:w-72"
             style={{ aspectRatio: '3 / 4' }}
           />
           <motion.h1
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.9, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="display text-[clamp(3rem,7vw,7.5rem)]"
+            className="display text-[clamp(3rem,7vw,7.5rem)] md:text-left"
           >
             Builder
           </motion.h1>
@@ -282,21 +335,10 @@ export function About() {
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-cream/50">Fuera de la pantalla</p>
           <h2 className="display mt-3 text-5xl sm:text-7xl">Lo que me mueve.</h2>
         </Reveal>
-        <div className="grid grid-flow-row-dense auto-rows-[220px] grid-cols-1 gap-3 sm:grid-cols-2 md:auto-rows-[240px] md:grid-cols-4">
+        <div className="grid grid-flow-row-dense auto-rows-[240px] grid-cols-1 gap-3 sm:grid-cols-2 md:auto-rows-[260px] md:grid-cols-4">
           {offScreen.map((o, i) => (
             <Reveal key={o.photos[0]} delay={(i % 4) * 0.06} className={`group relative overflow-hidden rounded-2xl border border-white/10 ${o.span}`}>
-              <div className="absolute inset-0 flex gap-px">
-                {o.photos.map((ph) => (
-                  <div key={ph} className="relative h-full flex-1 overflow-hidden">
-                    <img
-                      src={img(ph)}
-                      alt={o.title || o.text}
-                      loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
-                    />
-                  </div>
-                ))}
-              </div>
+              <CyclingPhotos photos={o.photos} alt={o.title} offset={i * 700} />
               {(o.title || o.text) && (
                 <>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
