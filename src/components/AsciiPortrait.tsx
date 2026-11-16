@@ -36,6 +36,8 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
     let atlas: HTMLCanvasElement | null = null
     const t0 = performance.now()
     let ready = false
+    let lastP = 0
+    let glitchRow = new Float32Array(0)
 
     const build = () => {
       const r = el.getBoundingClientRect()
@@ -48,6 +50,7 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
       cw = W / COLS
       rows = Math.round(H / cw)
       ch = H / rows
+      glitchRow = new Float32Array(rows).fill(1)
       // Muestrear la foto en la grilla
       const s = document.createElement('canvas')
       s.width = COLS
@@ -103,12 +106,17 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
 
     /** Mezcla foto/ASCII en el tiempo: ASCII 2,6 s → se disuelve → foto 2,6 s → vuelve. */
     const phase = (t: number) => {
-      const T = 7
-      const k = (t + 0.4) % T
-      if (k < 2.6) return 0
-      if (k < 3.5) return (k - 2.6) / 0.9
-      if (k < 6.1) return 1
-      return 1 - (k - 6.1) / 0.9
+      // Casi siempre ASCII; cada ~4,5 s la foto real aparece en ráfaga: tac, tac, tac
+      const k = t % 4.6
+      const flashes: [number, number][] = [
+        [3.4, 3.47],
+        [3.55, 3.62],
+        [3.7, 3.79],
+        [3.88, 3.94],
+        [4.02, 4.13],
+      ]
+      for (const [a, b] of flashes) if (k >= a && k < b) return 1
+      return 0
     }
 
     const draw = (now: number) => {
@@ -121,6 +129,10 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
       const t = (now - t0) / 1000
       ctx.clearRect(0, 0, W, H)
       const P = t < 2 ? 0 : phase(t)
+      if (P !== lastP) {
+        lastP = P
+        for (let y = 0; y < rows; y++) glitchRow[y] = Math.random()
+      }
       // Celdas
       for (let y = 0, i = 0; y < rows; y++) {
         for (let x = 0; x < COLS; x++, i++) {
@@ -130,8 +142,8 @@ export function AsciiPortrait({ className = '' }: { className?: string }) {
           // Encendido inicial: de a poco, en orden aleatorio
           const on = Math.min(1, Math.max(0, (t - seed[i] * 1.4) / 0.25))
           // Mezcla hacia la foto: barrido diagonal con ruido, para que se "disuelva"
-          const order = (x / COLS) * 0.35 + (y / rows) * 0.45 + seed[i] * 0.2
-          const m = Math.min(1, Math.max(0, (P * 1.6 - order) / 0.6))
+          // En el destello, algunas franjas quedan en ASCII (efecto glitch)
+          const m = P > 0 && glitchRow[y] > 0.16 ? 1 : 0
           if (m > 0.001) {
             ctx.globalAlpha = m * on
             const sw = img.naturalWidth / COLS
