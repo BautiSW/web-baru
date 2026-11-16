@@ -98,9 +98,9 @@ function CyclingPhotos({ photos, alt, offset = 0 }: { photos: string[]; alt: str
           key={ph}
           src={img(ph)}
           alt={k === i ? alt : ''}
-          loading="lazy"
+          decoding="async"
           className="absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-[1200ms] ease-out"
-          style={{ opacity: k === i ? 1 : 0 }}
+          style={{ opacity: k === i ? 1 : 0, objectPosition: focus[ph] }}
         />
       ))}
       {photos.length > 1 && (
@@ -117,6 +117,22 @@ function CyclingPhotos({ photos, alt, offset = 0 }: { photos: string[]; alt: str
 const flags: Record<string, string> = { Español: 'es', Inglés: 'gb', Portugués: 'pt' }
 
 const img = (name: string) => `/historia/${name}.webp`
+/** Encuadre de las fotos que no quedan bien centradas */
+const focus: Record<string, string> = { 'futbol-playa': '50% 88%', 'futbol-chico': '50% 60%', surf: '50% 40%' }
+
+/** Todas las fotos de la página: se precargan al entrar para que nada aparezca tarde. */
+export const storyPhotos = () => [...new Set([...chapters.flatMap((c) => c.photos), ...offScreen.flatMap((o) => o.photos)])].map(img)
+let preloaded = false
+export function preloadStory() {
+  if (preloaded) return
+  preloaded = true
+  for (const src of storyPhotos()) {
+    const im = new Image()
+    im.decoding = 'async'
+    im.src = src
+    im.decode?.().catch(() => undefined)
+  }
+}
 
 /* ───────────── Piezas ───────────── */
 
@@ -136,7 +152,7 @@ function Photos({ ch, drift }: { ch: Chapter; drift?: MotionValue<number> }) {
       <img
         src={img(main)}
         alt=""
-        loading="lazy"
+        decoding="async"
         className="aspect-[4/3] w-full rounded-2xl border border-white/10 object-cover shadow-2xl"
       />
       {rest.map((p, i) => (
@@ -144,7 +160,7 @@ function Photos({ ch, drift }: { ch: Chapter; drift?: MotionValue<number> }) {
           key={p}
           src={img(p)}
           alt=""
-          loading="lazy"
+          decoding="async"
           style={drift ? { y: drift } : undefined}
           className={`absolute w-[42%] rounded-xl border-4 border-[#111] object-cover shadow-2xl ${
             i === 0 ? '-bottom-10 -right-8 aspect-[4/3] rotate-[4deg]' : '-left-8 -top-10 aspect-[3/4] w-[30%] -rotate-[5deg]'
@@ -277,6 +293,7 @@ function VerticalTimeline() {
 /* ───────────── Página ───────────── */
 
 export function About() {
+  useEffect(preloadStory, [])
   return (
     <PageShell eyebrow="" hero={<AtlasHero figure={false} full />} chromeDelay={1.4}>
       <section className="flex min-h-[calc(100svh-16rem)] flex-col items-center justify-center text-center">

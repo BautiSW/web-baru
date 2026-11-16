@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { animate, motion, useMotionValue, useSpring } from 'motion/react'
 import { hotspots, SCENE_H, SCENE_W, type Hotspot } from '@/data/hotspots'
 import { VideoSprite } from './VideoSprite'
+import { preloadStory } from '@/pages/About'
 import { PaperSheet } from './PaperSheet'
 import { capoClip, mateClip } from '@/data/sprites'
 import type { Route } from '@/lib/router'
@@ -32,7 +33,11 @@ setTimeout(() => {
   new Image().src = '/scene/capo-cutmask-v4.png'
   // Precarga la escena ASCII de Under the hood cuando el home ya está tranquilo
   setTimeout(() => {
-    const load = () => fetch('/hero-atlas.json').catch(() => undefined)
+    const load = () => {
+      fetch('/hero-atlas.json').catch(() => undefined)
+      // Fotos de Mi historia: así la línea de tiempo ya está lista al entrar
+      window.setTimeout(preloadStory, 3000)
+    }
     if ('requestIdleCallback' in window) window.requestIdleCallback(load, { timeout: 4000 })
     else load()
   }, 4000)
