@@ -288,12 +288,12 @@ export function About() {
         >
           Mi historia
         </motion.p>
-        <div className="mt-6 flex w-full flex-col items-center gap-5 md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center md:gap-8">
+        <div className="mt-6 flex w-full flex-col items-center gap-5 md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center md:gap-12 lg:gap-14">
           <motion.h1
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.9, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="display whitespace-nowrap text-[clamp(3rem,5vw,6rem)] md:text-right"
+            className="display whitespace-nowrap text-[clamp(3rem,4.6vw,5.75rem)] md:text-right"
           >
             Business
           </motion.h1>
@@ -310,7 +310,7 @@ export function About() {
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.9, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="display whitespace-nowrap text-[clamp(3rem,5vw,6rem)] md:text-left"
+            className="display whitespace-nowrap text-[clamp(3rem,4.6vw,5.75rem)] md:text-left"
           >
             Builder
           </motion.h1>
