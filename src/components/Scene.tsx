@@ -327,10 +327,10 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
           {/* 2. Capó que se abre de verdad (cuadros de video), en su propia capa */}
           <motion.div
             className="pointer-events-none absolute inset-0"
-            animate={zoom ? { filter: ['brightness(1) saturate(1)', 'brightness(0.36) saturate(0.25)', 'brightness(0.95) saturate(1)', 'brightness(0.36) saturate(0.25)', 'brightness(0.75) saturate(0.7)', 'brightness(0.36) saturate(0.25)'] } : { filter: 'brightness(1) saturate(1)' }}
+            animate={zoom ? { filter: ['brightness(1) saturate(1)', 'brightness(0.34) saturate(0.15)', 'brightness(0.95) saturate(1)', 'brightness(0.34) saturate(0.15)', 'brightness(0.75) saturate(0.7)', 'brightness(0.34) saturate(0.15)'] } : { filter: 'brightness(1) saturate(1)' }}
             transition={zoom ? { duration: CUT.flicker, times: [0, 0.12, 0.24, 0.4, 0.55, 0.7], ease: 'linear' } : { duration: 0 }}
           >
-          <VideoSprite clip={capoClip} active={hoodOpen} mode="pingpong" loadDelay={0} cut />
+          <VideoSprite clip={capoClip} active={hoodOpen} mode="pingpong" loadDelay={0} neonOff cut={!!zoom} />
           {/* Mate: el termo ceba y sale vapor (zona Work) */}
           <VideoSprite clip={mateClip} active={hovered === workIndex} mode="once" loadDelay={400} cut={!!zoom} />
           {/* Carpeta: se levanta y da vuelta la hoja (zona Contacto) */}

@@ -38,7 +38,7 @@ function pickSrc(base: string) {
 }
 
 const VS = `attribute vec2 p;varying vec2 uv;void main(){uv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}`
-const FS = `precision mediump float;varying vec2 uv;uniform sampler2D t;uniform float o;uniform float e;uniform float k;uniform vec4 bx;uniform vec2 px;
+const FS = `precision mediump float;varying vec2 uv;uniform sampler2D t;uniform float o;uniform float e;uniform float k;uniform float g;uniform vec4 bx;uniform vec2 px;
 float neo(vec2 q){vec3 c=texture2D(t,vec2(q.x,min(q.y*.5,.5-e))).rgb;return smoothstep(.14,.3,c.r-c.b)*smoothstep(.26,.48,c.r);}
 void main(){vec3 c=texture2D(t,vec2(uv.x,min(uv.y*.5,.5-e))).rgb;float a=texture2D(t,vec2(uv.x,max(.5+uv.y*.5,.5+e))).r;
 a=clamp((a-.02)/.96,0.,1.)*o;
@@ -48,6 +48,8 @@ if(inb>0.){
 float n=neo(uv);
 for(int i=0;i<8;i++){float an=float(i)*.785398;vec2 d=vec2(cos(an),sin(an));n=max(n,neo(uv+d*px*3.));n=max(n,.85*neo(uv+d*px*6.));}
 a*=1.-k*clamp(n*1.3,0.,1.);}}
+// Corte de luz: sin halo (solo lo que de verdad se mueve) y en gris frío, como el taller apagado
+if(g>0.){a*=mix(1.,smoothstep(.4,.9,a),g);float l=dot(c,vec3(.3,.59,.11));c=mix(c,vec3(l)*vec3(.93,.98,1.06),g);}
 gl_FragColor=vec4(c*a,a);}`
 
 export function VideoSprite({
@@ -56,6 +58,7 @@ export function VideoSprite({
   mode,
   loadDelay = 0,
   cut = false,
+  neonOff = false,
 }: {
   clip: Clip
   active: boolean
@@ -63,10 +66,12 @@ export function VideoSprite({
   loadDelay?: number
   /** Corte de luz: congela lo que está y apaga el neón que aparece dentro del video */
   cut?: boolean
+  /** Borra siempre el neón que trae el video (se ve el cartel real de la escena) */
+  neonOff?: boolean
 }) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const api = useRef<{ set: (on: boolean) => void; cut: (on: boolean) => void } | null>(null)
+  const api = useRef<{ set: (on: boolean) => void; cut: (on: boolean) => void; neon: (on: boolean) => void } | null>(null)
   const activeRef = useRef(active)
   activeRef.current = active
 
@@ -104,6 +109,8 @@ export function VideoSprite({
     const uO = gl.getUniformLocation(prog, 'o')
     const uK = gl.getUniformLocation(prog, 'k')
     gl.uniform1f(uK, 0)
+    const uG = gl.getUniformLocation(prog, 'g')
+    gl.uniform1f(uG, 0)
     const nb = clip.neon ?? [2, 2, 2, 2]
     gl.uniform4f(gl.getUniformLocation(prog, 'bx'), nb[0], nb[1], nb[2], nb[3])
     gl.uniform2f(gl.getUniformLocation(prog, 'px'), 1 / clip.pw, 1 / (clip.ph * 2))
@@ -197,8 +204,10 @@ export function VideoSprite({
 
     v.addEventListener('ended', () => {
       if (mode === 'once') {
-        // Queda en el último cuadro (el termo apoyado), sin fundido
-        state = 'holding'
+        // El video termina igual que la foto (termo en su lugar, sin vapor): queda listo para el próximo mate
+        state = 'idle'
+        opacity = 0
+        draw()
       } else {
         // Terminó de cerrar
         opacity = 0
@@ -247,8 +256,12 @@ export function VideoSprite({
     }
     api.current = {
       set,
-      cut: (on: boolean) => {
+      neon: (on: boolean) => {
         gl.uniform1f(uK, on ? 1 : 0)
+        draw()
+      },
+      cut: (on: boolean) => {
+        gl.uniform1f(uG, on ? 1 : 0)
         draw()
       },
     }
@@ -313,6 +326,10 @@ export function VideoSprite({
   useEffect(() => {
     api.current?.cut(cut)
   }, [cut])
+
+  useEffect(() => {
+    api.current?.neon(neonOff)
+  }, [neonOff])
 
   return (
     <div ref={wrapRef} className="pointer-events-none absolute inset-0" aria-hidden="true">

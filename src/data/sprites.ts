@@ -5,4 +5,4 @@ import type { Clip } from '@/components/VideoSprite'
  * Generadas con scratchpad/tools/anim2.py: máscara por cuadro, así solo se ve lo que se mueve.
  */
 export const capoClip: Clip = { src: '/scene/capo-v6', x: 140, y: 96.43, w: 595.71, h: 452.86, pw: 834, ph: 634, frames: 27, fps: 24, neon: [0.37, 0, 1, 0.46] }
-export const mateClip: Clip = { src: '/scene/mate-v4', x: 954.29, y: 93.57, w: 515.71, h: 595.71, pw: 722, ph: 834, frames: 96, fps: 28 }
+export const mateClip: Clip = { src: '/scene/mate-v5', x: 954.29, y: 93.57, w: 515.71, h: 595.71, pw: 722, ph: 834, frames: 96, fps: 28 }
