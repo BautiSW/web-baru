@@ -309,16 +309,15 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
             animate={zoom ? { filter: ['brightness(1) saturate(1)', 'brightness(0.36) saturate(0.25)', 'brightness(0.95) saturate(1)', 'brightness(0.36) saturate(0.25)', 'brightness(0.75) saturate(0.7)', 'brightness(0.36) saturate(0.25)'] } : { filter: 'brightness(1) saturate(1)' }}
             transition={zoom ? { duration: CUT.flicker, times: [0, 0.12, 0.24, 0.4, 0.55, 0.7], ease: 'linear' } : { duration: 0 }}
           >
-          <VideoSprite clip={capoClip} active={hoodOpen} mode="pingpong" loadDelay={0} />
+          <VideoSprite clip={capoClip} active={hoodOpen} mode="pingpong" loadDelay={0} cut={!!zoom} />
           {/* Mate: el termo ceba y sale vapor (zona Work) */}
-          <VideoSprite clip={mateClip} active={hovered === workIndex} mode="once" loadDelay={400} />
+          <VideoSprite clip={mateClip} active={hovered === workIndex} mode="once" loadDelay={400} cut={!!zoom} />
           {/* Carpeta: se levanta y da vuelta la hoja (zona Contacto) */}
           <PaperSheet active={hovered === contactIndex} />
           </motion.div>
 
           {/* El apagado también va arriba de las animaciones (si no, el neón queda prendido en los cuadros
               del capó). Si el capó está abierto, se deja ver solo el auto. */}
-          {zoom && <OffLayer clipCar={hoodOpen} />}
 
           <motion.div
             className="pointer-events-none absolute inset-0"
@@ -413,7 +412,7 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
                   setHovered(i)
                   setSpotIndex(i)
                 }}
-                onBlur={() => setHovered(null)}
+                onBlur={() => !zoom && setHovered(null)}
                 onClick={(e) => {
                   e.stopPropagation()
                   if (isTouch) return tap(i)

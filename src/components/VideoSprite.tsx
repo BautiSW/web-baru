@@ -14,6 +14,8 @@ import { SCENE_H, SCENE_W } from '@/data/hotspots'
 export interface Clip {
   /** ruta sin extensión: hay .webm (VP9, más liviano) y .mp4 (H.264, para Safari) */
   src: string
+  /** Zona del cartel de neón dentro del video (u0, v0, u1, v1), para apagarlo en el corte de luz */
+  neon?: [number, number, number, number]
   /** posición y tamaño en coordenadas de la escena (1677 x 938) */
   x: number
   y: number
@@ -36,24 +38,35 @@ function pickSrc(base: string) {
 }
 
 const VS = `attribute vec2 p;varying vec2 uv;void main(){uv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}`
-const FS = `precision mediump float;varying vec2 uv;uniform sampler2D t;uniform float o;uniform float e;
+const FS = `precision mediump float;varying vec2 uv;uniform sampler2D t;uniform float o;uniform float e;uniform float k;uniform vec4 bx;uniform vec2 px;
+float neo(vec2 q){vec3 c=texture2D(t,vec2(q.x,min(q.y*.5,.5-e))).rgb;return smoothstep(.14,.3,c.r-c.b)*smoothstep(.26,.48,c.r);}
 void main(){vec3 c=texture2D(t,vec2(uv.x,min(uv.y*.5,.5-e))).rgb;float a=texture2D(t,vec2(uv.x,max(.5+uv.y*.5,.5+e))).r;
-a=clamp((a-.02)/.96,0.,1.)*o;gl_FragColor=vec4(c*a,a);}`
+a=clamp((a-.02)/.96,0.,1.)*o;
+if(k>0.){float inb=step(bx.x,uv.x)*step(uv.x,bx.z)*step(bx.y,uv.y)*step(uv.y,bx.w);
+if(inb>0.){
+// Corte de luz: el neón dentro del video (incluido el centro blanco de los tubos) se vuelve transparente
+float n=neo(uv);
+for(int i=0;i<8;i++){float an=float(i)*.785398;vec2 d=vec2(cos(an),sin(an));n=max(n,neo(uv+d*px*3.));n=max(n,.85*neo(uv+d*px*6.));}
+a*=1.-k*clamp(n*1.3,0.,1.);}}
+gl_FragColor=vec4(c*a,a);}`
 
 export function VideoSprite({
   clip,
   active,
   mode,
   loadDelay = 0,
+  cut = false,
 }: {
   clip: Clip
   active: boolean
   mode: 'pingpong' | 'once'
   loadDelay?: number
+  /** Corte de luz: congela lo que está y apaga el neón que aparece dentro del video */
+  cut?: boolean
 }) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const api = useRef<{ set: (on: boolean) => void } | null>(null)
+  const api = useRef<{ set: (on: boolean) => void; cut: (on: boolean) => void } | null>(null)
   const activeRef = useRef(active)
   activeRef.current = active
 
@@ -89,6 +102,11 @@ export function VideoSprite({
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
     const uO = gl.getUniformLocation(prog, 'o')
+    const uK = gl.getUniformLocation(prog, 'k')
+    gl.uniform1f(uK, 0)
+    const nb = clip.neon ?? [2, 2, 2, 2]
+    gl.uniform4f(gl.getUniformLocation(prog, 'bx'), nb[0], nb[1], nb[2], nb[3])
+    gl.uniform2f(gl.getUniformLocation(prog, 'px'), 1 / clip.pw, 1 / (clip.ph * 2))
     const uE = gl.getUniformLocation(prog, 'e')
     gl.uniform1f(uE, 1 / (clip.ph * 2))
 
@@ -232,7 +250,13 @@ export function VideoSprite({
         fade(0, 650)
       }
     }
-    api.current = { set }
+    api.current = {
+      set,
+      cut: (on: boolean) => {
+        gl.uniform1f(uK, on ? 1 : 0)
+        draw()
+      },
+    }
 
     const t = setTimeout(() => {
       v.src = pickSrc(clip.src)
@@ -290,6 +314,10 @@ export function VideoSprite({
   useEffect(() => {
     api.current?.set(active)
   }, [active])
+
+  useEffect(() => {
+    api.current?.cut(cut)
+  }, [cut])
 
   return (
     <div ref={wrapRef} className="pointer-events-none absolute inset-0" aria-hidden="true">
