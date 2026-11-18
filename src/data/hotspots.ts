@@ -27,7 +27,8 @@ export const hotspots: Hotspot[] = [
     route: 'work',
     label: 'Work',
     hint: 'Proyectos',
-    points: '815,395 1050,395 1150,398 1226,396 1230,632 1150,632 1062,598 1035,582 818,578',
+    // Ajustado a la compu, el mate y el termo (sin la pared de atrás)
+    points: '858,396 1048,404 1052,512 1066,512 1110,470 1138,462 1152,400 1228,396 1230,628 1152,630 1138,594 1064,596 1042,574 818,567 856,500',
   },
   {
     route: 'about',

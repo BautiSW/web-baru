@@ -197,11 +197,8 @@ export function VideoSprite({
 
     v.addEventListener('ended', () => {
       if (mode === 'once') {
+        // Queda en el último cuadro (el termo apoyado), sin fundido
         state = 'holding'
-        if (!activeRef.current) {
-          state = 'fading'
-          fade(0, 650)
-        }
       } else {
         // Terminó de cerrar
         opacity = 0
@@ -242,12 +239,10 @@ export function VideoSprite({
       if (on) {
         if (state === 'idle') start()
         else if (state === 'holding') {
+          // Volver a pasar: fundido muy corto al inicio y arranca de nuevo
           state = 'fading'
-          fade(0, 220)
+          fade(0, 260)
         }
-      } else if (state === 'holding') {
-        state = 'fading'
-        fade(0, 650)
       }
     }
     api.current = {

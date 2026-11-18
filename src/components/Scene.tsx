@@ -303,21 +303,40 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
           {/* Corte de luz: la misma escena con todo apagado, que aparece con un parpadeo */}
           {zoom && <OffLayer />}
 
+          {/* El parpadeo del neón va debajo de las animaciones: así nunca tapa el capó abierto */}
+          <motion.div
+            className="pointer-events-none absolute inset-0"
+            animate={zoom ? { opacity: 0 } : { opacity: 1 }}
+            transition={{ duration: 0 }}
+          >
+          {/* Neón: una capa oscura que lo "apaga" en parpadeos (cartel + reflejo en el capó) */}
+          <Layer className="neon-off">
+            <defs>
+              <filter id="neonSoft" x="-20%" y="-30%" width="140%" height="160%">
+                <feGaussianBlur stdDeviation="7" />
+              </filter>
+              <filter id="neonSoftLg" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="22" />
+              </filter>
+            </defs>
+            <polygon points="484,158 784,132 792,324 488,304" fill="#000" filter="url(#neonSoft)" />
+            <polygon points="430,412 660,418 668,498 436,486" fill="#000" filter="url(#neonSoftLg)" opacity={0.65} />
+          </Layer>
+          </motion.div>
+
           {/* 2. Capó que se abre de verdad (cuadros de video), en su propia capa */}
           <motion.div
             className="pointer-events-none absolute inset-0"
             animate={zoom ? { filter: ['brightness(1) saturate(1)', 'brightness(0.36) saturate(0.25)', 'brightness(0.95) saturate(1)', 'brightness(0.36) saturate(0.25)', 'brightness(0.75) saturate(0.7)', 'brightness(0.36) saturate(0.25)'] } : { filter: 'brightness(1) saturate(1)' }}
             transition={zoom ? { duration: CUT.flicker, times: [0, 0.12, 0.24, 0.4, 0.55, 0.7], ease: 'linear' } : { duration: 0 }}
           >
-          <VideoSprite clip={capoClip} active={hoodOpen} mode="pingpong" loadDelay={0} cut={!!zoom} />
+          <VideoSprite clip={capoClip} active={hoodOpen} mode="pingpong" loadDelay={0} cut />
           {/* Mate: el termo ceba y sale vapor (zona Work) */}
           <VideoSprite clip={mateClip} active={hovered === workIndex} mode="once" loadDelay={400} cut={!!zoom} />
           {/* Carpeta: se levanta y da vuelta la hoja (zona Contacto) */}
           <PaperSheet active={hovered === contactIndex} />
           </motion.div>
 
-          {/* El apagado también va arriba de las animaciones (si no, el neón queda prendido en los cuadros
-              del capó). Si el capó está abierto, se deja ver solo el auto. */}
 
           <motion.div
             className="pointer-events-none absolute inset-0"
@@ -335,19 +354,6 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
               </radialGradient>
             </defs>
             <circle cx={950} cy={180} r={330} fill="url(#lampGrad)" />
-          </Layer>
-          {/* Neón: una capa oscura que lo "apaga" en parpadeos (cartel + reflejo en el capó) */}
-          <Layer className="neon-off">
-            <defs>
-              <filter id="neonSoft" x="-20%" y="-30%" width="140%" height="160%">
-                <feGaussianBlur stdDeviation="7" />
-              </filter>
-              <filter id="neonSoftLg" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="22" />
-              </filter>
-            </defs>
-            <polygon points="484,158 784,132 792,324 488,304" fill="#000" filter="url(#neonSoft)" />
-            <polygon points="430,412 660,418 668,498 436,486" fill="#000" filter="url(#neonSoftLg)" opacity={0.65} />
           </Layer>
           {/* La lámpara apenas falla junto con el neón */}
           <Layer className="lamp-off">
