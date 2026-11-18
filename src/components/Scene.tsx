@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { animate, motion, useMotionValue, useSpring } from 'motion/react'
 import { hotspots, SCENE_H, SCENE_W, type Hotspot } from '@/data/hotspots'
-import { VideoSprite } from './VideoSprite'
 import { preloadStory } from '@/pages/About'
-import { PaperSheet } from './PaperSheet'
-import { capoClip, mateClip } from '@/data/sprites'
 import type { Route } from '@/lib/router'
 
 function useMedia(query: string) {
@@ -30,7 +27,6 @@ const OFF_SRC = window.matchMedia('(max-width: 900px)').matches ? '/scene/taller
 setTimeout(() => {
   const im = new Image()
   im.src = OFF_SRC
-  new Image().src = '/scene/capo-cutmask-v4.png'
   // Precarga la escena ASCII de Under the hood cuando el home ya está tranquilo
   setTimeout(() => {
     const load = () => {
@@ -225,10 +221,6 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
   }, [hovered, isTouch])
 
   const imgSrc = SCENE_SRC
-  const garageIndex = hotspots.findIndex((h) => h.route === 'garage')
-  const workIndex = hotspots.findIndex((h) => h.route === 'work')
-  const contactIndex = hotspots.findIndex((h) => h.route === 'contact')
-  const hoodOpen = hovered === garageIndex || zoom?.route === 'garage'
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-black" onMouseMove={onMove}>
@@ -324,18 +316,6 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
           </Layer>
           </motion.div>
 
-          {/* 2. Capó que se abre de verdad (cuadros de video), en su propia capa */}
-          <motion.div
-            className="pointer-events-none absolute inset-0"
-            animate={zoom ? { filter: ['brightness(1) saturate(1)', 'brightness(0.34) saturate(0.15)', 'brightness(0.95) saturate(1)', 'brightness(0.34) saturate(0.15)', 'brightness(0.75) saturate(0.7)', 'brightness(0.34) saturate(0.15)'] } : { filter: 'brightness(1) saturate(1)' }}
-            transition={zoom ? { duration: CUT.flicker, times: [0, 0.12, 0.24, 0.4, 0.55, 0.7], ease: 'linear' } : { duration: 0 }}
-          >
-          <VideoSprite clip={capoClip} active={hoodOpen} mode="pingpong" loadDelay={0} neonOff cut={!!zoom} />
-          {/* Mate: el termo ceba y sale vapor (zona Work) */}
-          <VideoSprite clip={mateClip} active={hovered === workIndex} mode="once" loadDelay={400} cut={!!zoom} />
-          {/* Carpeta: se levanta y da vuelta la hoja (zona Contacto) */}
-          <PaperSheet active={hovered === contactIndex} />
-          </motion.div>
 
 
           <motion.div
@@ -387,6 +367,24 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
               </mask>
             </defs>
             <rect width={SCENE_W} height={SCENE_H} fill="#000" mask="url(#spot)" />
+          </Layer>
+
+          {/* Luz sobre el objeto: se ilumina un poco al pasar el mouse */}
+          <Layer
+            style={{
+              opacity: hovered !== null && !zoom ? 1 : 0,
+              transition: zoom ? 'opacity 80ms linear' : 'opacity 450ms ease',
+              mixBlendMode: 'screen',
+            }}
+          >
+            <defs>
+              <filter id="glowSoft" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="26" />
+              </filter>
+            </defs>
+            {spotIndex !== null && (
+              <polygon points={hotspots[spotIndex].points} fill="#ffb877" opacity={0.16} filter="url(#glowSoft)" />
+            )}
           </Layer>
 
           {/* 5. Zonas cliqueables (invisibles), arriba de todo */}
@@ -506,9 +504,8 @@ export function Scene({ onEnter }: { onEnter: (route: Route) => void }) {
 
 const FLICKER_TIMES = [0, 0.12, 0.24, 0.4, 0.55, 0.7]
 
-/** Capa con el taller apagado, que entra con parpadeo. clipCar = todo menos el auto. */
-function OffLayer({ clipCar = false }: { clipCar?: boolean }) {
-  const id = clipCar ? 'offMaskCar' : undefined
+/** Capa con el taller apagado, que entra con parpadeo. */
+function OffLayer() {
   return (
     <motion.div
       className="pointer-events-none absolute inset-0"
@@ -517,16 +514,7 @@ function OffLayer({ clipCar = false }: { clipCar?: boolean }) {
       transition={{ duration: 0.6, times: FLICKER_TIMES, ease: 'linear' }}
     >
       <svg viewBox={`0 0 ${SCENE_W} ${SCENE_H}`} preserveAspectRatio="xMidYMid meet" className="h-full w-full">
-        {id && (
-          <defs>
-            {/* Máscara: todo apagado menos el capó abierto y el motor (sacada de los cuadros del capó) */}
-            <mask id={id} maskUnits="userSpaceOnUse" x={0} y={0} width={SCENE_W} height={SCENE_H}>
-              <rect width={SCENE_W} height={SCENE_H} fill="#fff" />
-              <image href="/scene/capo-cutmask-v4.png" x={capoClip.x} y={capoClip.y} width={capoClip.w} height={capoClip.h} preserveAspectRatio="none" />
-            </mask>
-          </defs>
-        )}
-        <g mask={id ? `url(#${id})` : undefined}>
+        <g>
           <g mask="url(#edgeX)">
             <image href={OFF_SRC} width={SCENE_W} height={SCENE_H} preserveAspectRatio="xMidYMid slice" mask="url(#edgeY)" />
           </g>

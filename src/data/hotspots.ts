@@ -20,8 +20,7 @@ export const hotspots: Hotspot[] = [
     route: 'garage',
     label: 'Under the hood',
     hint: 'Cómo trabajo y uso la IA',
-    // Incluye el espacio donde sube el capó abierto, para que no se cierre al mover el mouse
-    points: '0,295 120,300 180,350 465,100 592,128 612,246 600,420 715,470 722,640 665,700 625,800 360,805 0,895',
+    points: '0,300 118,302 185,352 262,416 450,410 565,416 640,436 690,470 722,525 722,640 665,700 625,800 360,805 0,893',
   },
   {
     route: 'work',
@@ -40,7 +39,6 @@ export const hotspots: Hotspot[] = [
     route: 'contact',
     label: 'Contacto',
     hint: 'Escribime',
-    // Incluye el aire sobre la carpeta, por donde vuela la hoja al pasar el mouse
-    points: '985,752 1090,650 1250,645 1312,730 1312,842 1198,848 1088,804',
+    points: '1000,756 1088,688 1290,730 1312,840 1180,842 1095,812',
   },
 ]
